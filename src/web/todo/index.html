@@ -60,6 +60,17 @@
       border-bottom: 2px solid #e74c3c;
     }
 
+    #new-todo:focus-visible {
+      outline: 2px solid #4A90D9;
+      outline-offset: 1px;
+    }
+
+    #todo-list li .destroy:focus-visible,
+    #clear-completed:focus-visible {
+      outline: 2px solid #4A90D9;
+      outline-offset: 1px;
+    }
+
     #new-todo::placeholder {
       font-style: italic;
       color: #bbb;
@@ -76,11 +87,11 @@
       align-items: center;
       padding: 12px 8px;
       border-bottom: 1px solid #eee;
-      transition: background-color 0.2s ease;
+      transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
     }
 
     #todo-list li:hover {
-      background-color: #fafafa;
+      background-color: #f5f5f5;
     }
 
     #todo-list li input[type="checkbox"] {
@@ -114,6 +125,7 @@
     #todo-list li.completed .view {
       text-decoration: line-through;
       opacity: 0.5;
+      transition: all 0.3s ease;
     }
 
     /* Delete button */
@@ -125,15 +137,15 @@
       cursor: pointer;
       padding: 0 8px;
       visibility: hidden;
-      transition: color 0.2s ease, opacity 0.2s ease;
+      transition: opacity 0.2s ease, color 0.2s ease;
+    }
+
+    #todo-list li .destroy:hover {
+      color: #c0392b;
     }
 
     #todo-list li:hover .destroy {
       visibility: visible;
-    }
-
-    #todo-list li .destroy:hover {
-      color: #e74c3c;
     }
 
     /* Footer */
@@ -171,6 +183,11 @@
       border-color: rgba(231, 76, 60, 0.3);
     }
 
+    #filters .filter-btn:focus-visible {
+      outline: 2px solid #4A90D9;
+      outline-offset: 1px;
+    }
+
     #filters .filter-btn.selected {
       border-color: #e74c3c;
       color: #333;
@@ -192,13 +209,12 @@
       text-decoration: underline;
     }
 
-    #clear-completed:disabled {
-      opacity: 0.4;
+    #clear-completed.disabled {
+      opacity: 0.3;
       cursor: not-allowed;
-      text-decoration: none;
+      pointer-events: none;
     }
 
-    /* Responsive */
     @media (max-width: 500px) {
       body {
         padding-top: 20px;
@@ -233,6 +249,43 @@
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
+      }
+    }
+
+    @media (max-width: 400px) {
+      #todo-app {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      #new-todo {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      #todo-list li {
+        padding: 8px 4px;
+      }
+
+      #todo-list li .view,
+      #todo-list li .edit {
+        font-size: 14px;
+      }
+
+      #item-count {
+        display: none;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      html {
+        overflow-x: hidden;
       }
     }
   </style>
@@ -361,6 +414,28 @@
       // Clear list
       todoList.innerHTML = '';
 
+      // Empty state messages (TASK-4)
+      if (items.length === 0) {
+        const emptyLi = document.createElement('li');
+        emptyLi.style.listStyle = 'none';
+        emptyLi.style.borderBottom = 'none';
+        emptyLi.style.padding = '40px 8px';
+        emptyLi.style.textAlign = 'center';
+        emptyLi.style.fontStyle = 'italic';
+        emptyLi.style.color = '#999';
+
+        var msg;
+        if (state.filter === 'all') {
+          msg = 'No tasks yet \u2014 add one above!';
+        } else if (state.filter === 'active') {
+          msg = 'No active tasks!';
+        } else {
+          msg = 'No completed tasks!';
+        }
+        emptyLi.textContent = msg;
+        todoList.appendChild(emptyLi);
+      }
+
       // Build each item as DOM nodes
       items.forEach(function (item) {
         const li = document.createElement('li');
@@ -404,13 +479,17 @@
         }
       });
 
-      // Update clear-completed visibility
-      clearCompletedBtn.style.display = state.todos.some(function (t) { return t.completed; }) ? 'block' : 'none';
+      // Update clear-completed disabled state (TASK-4)
+      clearCompletedBtn.classList.toggle('disabled',
+        !state.todos.some(function (t) { return t.completed; })
+      );
     }
 
     // ============= Module D — Events (TASK-3) =============
 
-    // commitEdit helper
+    // commitEdit helper (TASK-4: double-save guard with flag)
+    var _editingFlag = {}; // flag map to prevent blur double-save after Enter
+
     function commitEdit(inputEl, id, originalTitle) {
       var value = inputEl.value.trim();
       if (value === '' || value === originalTitle) {
@@ -473,7 +552,9 @@
           if (ev.key === 'Enter') {
             input.removeEventListener('keydown', onKeydown);
             input.removeEventListener('blur', onBlur);
+            _editingFlag[id] = true;
             commitEdit(input, id, originalTitle);
+            delete _editingFlag[id];
           } else if (ev.key === 'Escape') {
             input.removeEventListener('keydown', onKeydown);
             input.removeEventListener('blur', onBlur);
@@ -488,6 +569,11 @@
         function onBlur() {
           input.removeEventListener('keydown', onKeydown);
           input.removeEventListener('blur', onBlur);
+          // Double-save guard: if Enter handler already saved via flag, skip
+          if (_editingFlag[id]) {
+            delete _editingFlag[id];
+            return;
+          }
           commitEdit(input, id, originalTitle);
         }
 
