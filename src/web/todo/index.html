@@ -257,7 +257,185 @@
     </div>
   </div>
 
-  <!-- JavaScript placeholder -->
-  <script></script>
+  <script>
+    // === Helper ===
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    // === Storage Layer ===
+    function loadTodos() {
+      try {
+        const data = localStorage.getItem('todo_items');
+        if (data === null) return [];
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn('loadTodos error:', e);
+        return [];
+      }
+    }
+
+    function saveTodos(todos) {
+      try {
+        localStorage.setItem('todo_items', JSON.stringify(todos));
+      } catch (e) {
+        console.warn('saveTodos error:', e);
+      }
+    }
+
+    // === State ===
+    const state = { todos: [], filter: 'all' };
+
+    // === DOM refs ===
+    const todoListEl = document.getElementById('todo-list');
+    const newTodoInput = document.getElementById('new-todo');
+    const todoCountEl = document.getElementById('todo-count');
+    const clearCompletedBtn = document.getElementById('clear-completed');
+    const emptyStateEl = document.querySelector('.empty-state');
+    const filterAll = document.getElementById('filter-all');
+    const filterActive = document.getElementById('filter-active');
+    const filterCompleted = document.getElementById('filter-completed');
+
+    // === State Management ===
+    function addTodo(title) {
+      if (!title || title.trim() === '') return;
+      const item = {
+        id: generateId(),
+        title: title.trim(),
+        completed: false,
+        createdAt: Date.now()
+      };
+      state.todos.unshift(item);
+      saveTodos(state.todos);
+      render();
+    }
+
+    function toggleTodo(id) {
+      const item = state.todos.find(t => t.id === id);
+      if (!item) return;
+      item.completed = !item.completed;
+      saveTodos(state.todos);
+      render();
+    }
+
+    function deleteTodo(id) {
+      state.todos = state.todos.filter(t => t.id !== id);
+      saveTodos(state.todos);
+      render();
+    }
+
+    function editTodo(id, newTitle) {
+      const item = state.todos.find(t => t.id === id);
+      if (!item) return;
+      item.title = (newTitle && newTitle.trim()) ? newTitle.trim() : 'Untitled';
+      saveTodos(state.todos);
+      render();
+    }
+
+    function clearCompleted() {
+      state.todos = state.todos.filter(t => !t.completed);
+      saveTodos(state.todos);
+      render();
+    }
+
+    function setFilter(filter) {
+      state.filter = filter;
+      [filterAll, filterActive, filterCompleted].forEach(btn => btn.classList.remove('active'));
+      if (filter === 'all') filterAll.classList.add('active');
+      else if (filter === 'active') filterActive.classList.add('active');
+      else if (filter === 'completed') filterCompleted.classList.add('active');
+      render();
+    }
+
+    // === Render ===
+    function render() {
+      const sorted = [...state.todos].sort((a, b) => b.createdAt - a.createdAt);
+
+      let filtered;
+      if (state.filter === 'active') {
+        filtered = sorted.filter(t => !t.completed);
+      } else if (state.filter === 'completed') {
+        filtered = sorted.filter(t => t.completed);
+      } else {
+        filtered = sorted;
+      }
+
+      todoListEl.innerHTML = '';
+
+      filtered.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'todo-item' + (item.completed ? ' completed' : '');
+        li.dataset.id = item.id;
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = item.completed;
+        cb.addEventListener('change', () => toggleTodo(item.id));
+
+        const label = document.createElement('label');
+        label.textContent = item.title;
+        label.addEventListener('dblclick', () => {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = item.title;
+          input.className = 'edit-input';
+          input.style.cssText = 'flex:1; font-size:20px; font-weight:300; padding:4px 0; border:1px solid #ccc; border-radius:3px; outline:none; font-family:inherit;';
+          label.replaceWith(input);
+          input.focus();
+          input.select();
+
+          function commitEdit() {
+            editTodo(item.id, input.value);
+          }
+
+          input.addEventListener('blur', commitEdit);
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { input.blur(); }
+            if (e.key === 'Escape') { input.value = item.title; input.blur(); }
+          });
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = '×';
+        delBtn.addEventListener('click', () => deleteTodo(item.id));
+
+        li.appendChild(cb);
+        li.appendChild(label);
+        li.appendChild(delBtn);
+        todoListEl.appendChild(li);
+      });
+
+      // Update count
+      const activeCount = state.todos.filter(t => !t.completed).length;
+      todoCountEl.textContent = activeCount + ' item' + (activeCount !== 1 ? 's' : '') + ' left';
+
+      // Clear completed visibility
+      const hasCompleted = state.todos.some(t => t.completed);
+      clearCompletedBtn.classList.toggle('hidden', !hasCompleted);
+
+      // Empty state
+      emptyStateEl.classList.toggle('hidden', filtered.length > 0);
+    }
+
+    // === Event Wiring ===
+    newTodoInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addTodo(newTodoInput.value);
+        newTodoInput.value = '';
+      }
+    });
+
+    clearCompletedBtn.addEventListener('click', clearCompleted);
+
+    filterAll.addEventListener('click', () => setFilter('all'));
+    filterActive.addEventListener('click', () => setFilter('active'));
+    filterCompleted.addEventListener('click', () => setFilter('completed'));
+
+    // === Init ===
+    state.todos = loadTodos();
+    render();
+  </script>
 </body>
 </html>
