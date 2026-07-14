@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>todos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="todoapp">
+    <header class="header">
+      <h1>todos</h1>
+    </header>
+
+    <main class="main">
+      <input class="new-todo" type="text" placeholder="What needs to be done?" autofocus>
+
+      <ul id="todo-list">
+        <!-- Todo items will be rendered here -->
+        <li class="todo-item">
+          <div class="view">
+            <input class="toggle" type="checkbox">
+            <label>Sample task</label>
+            <button class="destroy">&times;</button>
+          </div>
+          <input class="edit" type="text">
+        </li>
+      </ul>
+
+      <div class="empty-state hidden">
+        <p>No tasks yet. Add one above!</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span class="todo-count"><strong>0</strong> items left</span>
+      <ul class="filters">
+        <li><a href="#/" class="selected">All</a></li>
+        <li><a href="#/active">Active</a></li>
+        <li><a href="#/completed">Completed</a></li>
+      </ul>
+      <button class="clear-completed hidden">Clear completed</button>
+    </footer>
+  </div>
+</body>
+</html>
