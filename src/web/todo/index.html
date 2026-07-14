@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📋 Todo List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="todo-app">
+    <header class="todo-header">
+      <h1>📋 Todo List</h1>
+    </header>
+
+    <main class="todo-main">
+      <div class="input-area">
+        <input
+          type="text"
+          id="new-todo"
+          placeholder="What needs to be done?"
+          autofocus
+        >
+      </div>
+
+      <ul id="todo-list">
+        <!-- Todo items will be rendered here by JavaScript -->
+      </ul>
+
+      <footer class="todo-footer">
+        <span id="todo-count">0 items left</span>
+
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <button id="clear-completed" class="clear-btn" style="display:none">
+          Clear completed
+        </button>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
