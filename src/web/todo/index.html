@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <style>
+    /* === Reset / Normalize === */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* === Layout === */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.4;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .todo-container {
+      max-width: 550px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    /* === Header === */
+    .todo-header {
+      text-align: center;
+      padding: 24px 24px 0;
+    }
+    .todo-header h1 {
+      font-size: 28px;
+      font-weight: 300;
+      color: #e74c3c;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    /* === Input Section === */
+    .todo-input {
+      padding: 0 24px 16px;
+    }
+    .todo-input input {
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 20px;
+      font-weight: 300;
+      border: none;
+      border-bottom: 1px solid #e0e0e0;
+      outline: none;
+      background: transparent;
+      transition: border-color 0.2s ease;
+      color: #333;
+    }
+    .todo-input input::placeholder {
+      color: #ccc;
+      font-style: italic;
+    }
+    .todo-input input:focus {
+      border-bottom-color: #e74c3c;
+    }
+
+    /* === List Section === */
+    .todo-list-section {
+      border-top: 1px solid #e8e8e8;
+    }
+    #todo-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* === Todo Item === */
+    .todo-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.15s ease;
+      position: relative;
+    }
+    .todo-item:hover {
+      background-color: #fafafa;
+    }
+
+    /* Checkbox */
+    .todo-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.2s, background-color 0.2s;
+      position: relative;
+    }
+    .todo-item input[type="checkbox"]:checked {
+      border-color: #27ae60;
+      background-color: #27ae60;
+    }
+    .todo-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      width: 6px;
+      height: 10px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .todo-item input[type="checkbox"]:focus {
+      outline: 2px solid rgba(39, 174, 96, 0.3);
+      outline-offset: 2px;
+    }
+
+    /* Title Label */
+    .todo-item .todo-title {
+      flex: 1;
+      margin-left: 14px;
+      font-size: 17px;
+      color: #333;
+      cursor: pointer;
+      transition: color 0.2s, text-decoration-color 0.2s;
+      word-break: break-word;
+    }
+    .todo-item.completed .todo-title {
+      text-decoration: line-through;
+      color: #aaa;
+      opacity: 0.6;
+    }
+
+    /* Inline Edit Input */
+    .todo-item .edit-input {
+      flex: 1;
+      margin-left: 14px;
+      padding: 6px 8px;
+      font-size: 17px;
+      border: 1px solid #e74c3c;
+      border-radius: 4px;
+      outline: none;
+      background: #fff;
+      color: #333;
+    }
+    .todo-item .edit-input:focus {
+      box-shadow: 0 0 4px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Destroy Button */
+    .todo-item .destroy {
+      display: none;
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.15s, background-color 0.15s;
+      flex-shrink: 0;
+    }
+    .todo-item:hover .destroy {
+      display: block;
+    }
+    .todo-item .destroy:hover {
+      background-color: #fde8e8;
+    }
+
+    /* === Footer === */
+    .todo-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      font-size: 13px;
+      color: #888;
+      border-top: 1px solid #e8e8e8;
+      background: #fcfcfc;
+    }
+    .todo-footer .item-count {
+      min-width: 80px;
+    }
+
+    /* Filter Buttons */
+    .todo-footer .filters {
+      display: flex;
+      gap: 4px;
+    }
+    .todo-footer .filters button {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #888;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .todo-footer .filters button:hover {
+      border-color: rgba(175, 47, 47, 0.2);
+      color: #555;
+    }
+    .todo-footer .filters button.active {
+      border-color: rgba(175, 47, 47, 0.4);
+      color: #333;
+    }
+
+    /* Clear Completed Button */
+    .todo-footer .clear-completed {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #888;
+      padding: 3px 8px;
+      border-radius: 3px;
+      transition: color 0.15s;
+      display: none;
+    }
+    .todo-footer .clear-completed:hover {
+      color: #e74c3c;
+      text-decoration: underline;
+    }
+    .todo-footer .clear-completed.visible {
+      display: inline-block;
+    }
+
+    /* === Empty State === */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+      color: #bbb;
+      font-size: 16px;
+    }
+    .empty-state.visible {
+      display: block;
+    }
+    .empty-state .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .empty-state p {
+      font-style: italic;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 480px) {
+      body {
+        padding: 8px;
+      }
+      .todo-container {
+        margin: 16px auto;
+        border-radius: 6px;
+      }
+      .todo-header h1 {
+        font-size: 24px;
+      }
+      .todo-input input {
+        font-size: 17px;
+        padding: 12px 8px;
+      }
+      .todo-item {
+        padding: 10px 16px;
+      }
+      .todo-item .todo-title {
+        font-size: 15px;
+      }
+      .todo-footer {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px 16px;
+        justify-content: center;
+      }
+      .todo-footer .item-count {
+        min-width: auto;
+        text-align: center;
+        width: 100%;
+      }
+      .todo-footer .filters {
+        order: 2;
+      }
+      .todo-footer .clear-completed {
+        order: 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <!-- Header -->
+    <header class="todo-header">
+      <h1>Todo List</h1>
+    </header>
+
+    <!-- Input Section -->
+    <section class="todo-input">
+      <input type="text" id="new-todo" placeholder="What needs to be done?" autofocus>
+    </section>
+
+    <!-- List Section -->
+    <section class="todo-list-section">
+      <ul id="todo-list"></ul>
+    </section>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>Nothing here yet. Add a task above!</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="todo-footer" id="todo-footer">
+      <span class="item-count" id="item-count">0 items left</span>
+      <div class="filters">
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="active">Active</button>
+        <button data-filter="completed">Completed</button>
+      </div>
+      <button class="clear-completed" id="clear-completed">Clear completed</button>
+    </footer>
+  </div>
+
+  <script>
+    // ============================================================
+    // TODO: JavaScript logic will be implemented in a future task
+    // ============================================================
+  </script>
+</body>
+</html>
