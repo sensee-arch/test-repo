@@ -335,8 +335,98 @@
 
   <script>
     // ============================================================
-    // TODO: JavaScript logic will be implemented in a future task
+    // Storage Module
     // ============================================================
+
+    function loadTodos() {
+      try {
+        const raw = localStorage.getItem('todo_items');
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          return [];
+        }
+        return parsed;
+      } catch (error) {
+        console.warn('Failed to load todos:', error);
+        return [];
+      }
+    }
+
+    function saveTodos(items) {
+      try {
+        localStorage.setItem('todo_items', JSON.stringify(items));
+      } catch (error) {
+        console.warn('Failed to save todos:', error);
+      }
+    }
+
+    // ============================================================
+    // State Management
+    // ============================================================
+
+    const state = {
+      todos: [],
+      filter: 'all' // 'all' | 'active' | 'completed'
+    };
+
+    function addTodo(title) {
+      const trimmed = title.trim();
+      if (!trimmed) return null;
+
+      const item = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        title: trimmed,
+        completed: false,
+        createdAt: Date.now()
+      };
+
+      state.todos.unshift(item);
+      saveTodos(state.todos);
+      return item;
+    }
+
+    function toggleTodo(id) {
+      const item = state.todos.find(t => t.id === id);
+      if (!item) return;
+      item.completed = !item.completed;
+      saveTodos(state.todos);
+    }
+
+    function editTodo(id, title) {
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      const item = state.todos.find(t => t.id === id);
+      if (!item) return;
+      item.title = trimmed;
+      saveTodos(state.todos);
+    }
+
+    function deleteTodo(id) {
+      state.todos = state.todos.filter(t => t.id !== id);
+      saveTodos(state.todos);
+    }
+
+    function clearCompleted() {
+      state.todos = state.todos.filter(t => !t.completed);
+      saveTodos(state.todos);
+    }
+
+    function getFilteredTodos() {
+      const sorted = [...state.todos].sort((a, b) => b.createdAt - a.createdAt);
+
+      if (state.filter === 'active') {
+        return sorted.filter(t => !t.completed);
+      }
+      if (state.filter === 'completed') {
+        return sorted.filter(t => t.completed);
+      }
+      return sorted;
+    }
+
+    // ============================================================
+    // Init: load persisted todos into state
+    // ============================================================
+    state.todos = loadTodos();
   </script>
 </body>
 </html>
