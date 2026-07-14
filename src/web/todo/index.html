@@ -138,25 +138,10 @@
       transition: all 0.2s ease;
     }
 
-    /* === Edit Input === */
-    .todo-item .edit-input {
-      flex: 1;
-      font-size: 20px;
-      font-weight: 300;
-      padding: 4px 0;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      outline: none;
-      font-family: inherit;
-    }
 
-    .todo-item .edit-input:focus {
-      border-color: #4a9eff !important;
-      box-shadow: 0 0 3px rgba(74, 158, 255, 0.4);
-    }
 
     /* === Delete Button === */
-    .todo-item .delete-btn {
+    .todo-item .destroy {
       font-size: 22px;
       font-weight: 300;
       color: #cc9a9a;
@@ -170,14 +155,31 @@
       flex-shrink: 0;
     }
 
-    .todo-item:hover .delete-btn {
+    .todo-item:hover .destroy {
       opacity: 1;
     }
 
-    .todo-item .delete-btn:hover {
+    .todo-item .destroy:hover {
       color: #af5b5b;
       background: rgba(204, 154, 154, 0.1);
       border-radius: 3px;
+    }
+
+    /* === Edit Input === */
+    .todo-item .edit {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 300;
+      padding: 4px 0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .todo-item .edit:focus {
+      border-color: #4a9eff;
+      box-shadow: 0 0 3px rgba(74, 158, 255, 0.4);
     }
 
     /* === Footer === */
@@ -297,7 +299,7 @@
         font-size: 16px;
       }
 
-      .todo-item .edit-input {
+      .todo-item .edit {
         font-size: 16px;
       }
 
@@ -346,6 +348,16 @@
     // === Helper ===
     function generateId() {
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS.
+     * @param {string} str - raw input string
+     * @returns {string} - HTML-entity escaped string
+     */
+    function escapeHtml(str) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return String(str).replace(/[&<>"']/g, ch => map[ch]);
     }
 
     // === Storage Layer ===
@@ -433,10 +445,18 @@
       render();
     }
 
-    // === Render ===
+    // === Render Layer ===
+    /**
+     * Render the todo list UI based on current state.
+     * - Sorts by createdAt descending
+     * - Applies active filter
+     * - Uses event delegation (no direct listeners on generated elements)
+     */
     function render() {
+      // Sort by createdAt descending (newest first)
       const sorted = [...state.todos].sort((a, b) => b.createdAt - a.createdAt);
 
+      // Apply filter
       let filtered;
       if (state.filter === 'active') {
         filtered = sorted.filter(t => !t.completed);
@@ -446,8 +466,10 @@
         filtered = sorted;
       }
 
+      // Clear list
       todoListEl.innerHTML = '';
 
+      // Build list items
       filtered.forEach(item => {
         const li = document.createElement('li');
         li.className = 'todo-item' + (item.completed ? ' completed' : '');
@@ -456,7 +478,6 @@
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.checked = item.completed;
-        cb.addEventListener('change', () => toggleTodo(item.id));
 
         const label = document.createElement('label');
         label.textContent = item.title;
@@ -464,7 +485,7 @@
           const input = document.createElement('input');
           input.type = 'text';
           input.value = item.title;
-          input.className = 'edit-input';
+          input.className = 'edit';
           label.replaceWith(input);
           input.focus();
           input.select();
@@ -494,9 +515,8 @@
         });
 
         const delBtn = document.createElement('button');
-        delBtn.className = 'delete-btn';
+        delBtn.className = 'destroy';
         delBtn.textContent = '×';
-        delBtn.addEventListener('click', () => deleteTodo(item.id));
 
         li.appendChild(cb);
         li.appendChild(label);
@@ -504,9 +524,15 @@
         todoListEl.appendChild(li);
       });
 
-      // Update count
+      // Update remaining count
       const activeCount = state.todos.filter(t => !t.completed).length;
       todoCountEl.textContent = activeCount + ' item' + (activeCount !== 1 ? 's' : '') + ' left';
+
+      // Sync filter button active state in render (covers all paths)
+      [filterAll, filterActive, filterCompleted].forEach(btn => btn.classList.remove('active'));
+      if (state.filter === 'all') filterAll.classList.add('active');
+      else if (state.filter === 'active') filterActive.classList.add('active');
+      else if (state.filter === 'completed') filterCompleted.classList.add('active');
 
       // Clear completed disabled state
       const hasCompleted = state.todos.some(t => t.completed);
@@ -516,7 +542,9 @@
       emptyStateEl.classList.toggle('hidden', filtered.length > 0);
     }
 
-    // === Event Wiring ===
+    // === Event Handlers (event delegation) ===
+
+    // New todo input: Enter key
     newTodoInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         addTodo(newTodoInput.value);
@@ -524,15 +552,78 @@
       }
     });
 
-    clearCompletedBtn.addEventListener('click', clearCompleted);
+    // Delegated click on #todo-list
+    todoListEl.addEventListener('click', (e) => {
+      const target = e.target;
+      // Check if target is a checkbox
+      if (target.type === 'checkbox') {
+        const li = target.closest('li');
+        if (li && li.dataset.id) {
+          toggleTodo(li.dataset.id);
+        }
+        return;
+      }
+      // Check if target is a destroy button
+      if (target.classList.contains('destroy') || target.textContent === '×') {
+        const li = target.closest('li');
+        if (li && li.dataset.id) {
+          deleteTodo(li.dataset.id);
+        }
+        return;
+      }
+    });
 
+    // Delegated dblclick on #todo-list for inline editing
+    todoListEl.addEventListener('dblclick', (e) => {
+      const target = e.target;
+      // Only trigger on label elements
+      if (target.tagName !== 'LABEL') return;
+      const li = target.closest('li');
+      if (!li || !li.dataset.id) return;
+      const id = li.dataset.id;
+      const currentTitle = target.textContent;
+
+      // Replace label with edit input
+      const editInput = document.createElement('input');
+      editInput.type = 'text';
+      editInput.className = 'edit';
+      editInput.value = currentTitle;
+      target.replaceWith(editInput);
+      editInput.focus();
+      editInput.select();
+
+      // Named blur handler to allow removal on Escape
+      function saveOnBlur() {
+        editTodo(id, editInput.value);
+      }
+
+      editInput.addEventListener('blur', saveOnBlur);
+
+      editInput.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') {
+          editInput.blur();
+        } else if (ev.key === 'Escape') {
+          // Remove blur handler first to avoid saving, then restore original
+          editInput.removeEventListener('blur', saveOnBlur);
+          editTodo(id, currentTitle);
+        }
+      });
+    });
+
+    // Filter buttons
     filterAll.addEventListener('click', () => setFilter('all'));
     filterActive.addEventListener('click', () => setFilter('active'));
     filterCompleted.addEventListener('click', () => setFilter('completed'));
 
-    // === Init ===
-    state.todos = loadTodos();
-    render();
+    // Clear completed
+    clearCompletedBtn.addEventListener('click', clearCompleted);
+
+    // === Initialization ===
+    document.addEventListener('DOMContentLoaded', () => {
+      state.todos = loadTodos();
+      state.filter = 'all';
+      render();
+    });
   </script>
 </body>
 </html>
