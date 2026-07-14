@@ -330,7 +330,74 @@
   </div>
 
   <script>
-    // JavaScript logic will be added in TASK-2 and TASK-3
+    // ==========================================
+    // State Variables
+    // ==========================================
+    let todos = [];           // Array<TodoItem>
+    let currentFilter = 'all'; // 'all' | 'active' | 'completed'
+
+    // ==========================================
+    // Utility Functions
+    // ==========================================
+
+    /**
+     * Generate a unique ID for a new todo item
+     * @returns {string}
+     */
+    function generateId() {
+      return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    }
+
+    /**
+     * Escape HTML special characters to prevent XSS
+     * @param {string} text
+     * @returns {string}
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
+    }
+
+    // ==========================================
+    // Storage Module (localStorage CRUD)
+    // ==========================================
+
+    /**
+     * Load todos from localStorage
+     * @returns {Array<{id:string, title:string, completed:boolean, createdAt:number}>}
+     */
+    function loadTodos() {
+      try {
+        const raw = localStorage.getItem('todo_items');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        // Validate each item has required fields
+        return parsed.filter(item =>
+          item &&
+          typeof item.id === 'string' &&
+          typeof item.title === 'string' &&
+          typeof item.completed === 'boolean' &&
+          typeof item.createdAt === 'number'
+        );
+      } catch (e) {
+        console.warn('Failed to load todos from localStorage:', e);
+        return [];
+      }
+    }
+
+    /**
+     * Save todos to localStorage
+     * @param {Array} todosData
+     */
+    function saveTodos(todosData) {
+      try {
+        localStorage.setItem('todo_items', JSON.stringify(todosData));
+      } catch (e) {
+        console.warn('Failed to save todos to localStorage:', e);
+      }
+    }
   </script>
 </body>
 </html>
