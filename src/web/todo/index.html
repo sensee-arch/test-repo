@@ -19,7 +19,7 @@
       line-height: 1.6;
     }
 
-    /* === Layout === */
+    /* === Container === */
     .container {
       max-width: 550px;
       margin: 60px auto 0;
@@ -39,7 +39,7 @@
       letter-spacing: -1px;
     }
 
-    /* === Input === */
+    /* === New Todo Input === */
     #new-todo {
       width: 100%;
       padding: 16px 16px 16px 60px;
@@ -61,6 +61,8 @@
     #new-todo:focus {
       border-color: #c8a8ac;
       box-shadow: 0 0 4px rgba(200, 168, 172, 0.4);
+      outline: 3px solid #4a9eff;
+      outline-offset: -1px;
     }
 
     /* === Main Card === */
@@ -78,12 +80,20 @@
       padding: 0;
     }
 
+    /* Fade-in animation for new items */
+    @keyframes fadeInItem {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     .todo-item {
       display: flex;
       align-items: center;
       padding: 12px 16px;
       border-bottom: 1px solid #ededed;
-      transition: background-color 0.15s ease;
+      background-color: #fff;
+      transition: background-color 0.15s ease, opacity 0.2s ease;
+      animation: fadeInItem 0.2s ease;
     }
 
     .todo-item:last-child {
@@ -91,7 +101,7 @@
     }
 
     .todo-item:hover {
-      background-color: #fafafa;
+      background-color: #f5f5f5;
     }
 
     /* === Checkbox === */
@@ -102,6 +112,11 @@
       cursor: pointer;
       accent-color: #5dc2af;
       flex-shrink: 0;
+      transition: transform 0.15s ease;
+    }
+
+    .todo-item input[type="checkbox"]:hover {
+      transform: scale(1.2);
     }
 
     /* === Label === */
@@ -121,6 +136,23 @@
       color: #d9d9d9;
       opacity: 0.5;
       transition: all 0.2s ease;
+    }
+
+    /* === Edit Input === */
+    .todo-item .edit-input {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 300;
+      padding: 4px 0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .todo-item .edit-input:focus {
+      border-color: #4a9eff !important;
+      box-shadow: 0 0 3px rgba(74, 158, 255, 0.4);
     }
 
     /* === Delete Button === */
@@ -144,6 +176,8 @@
 
     .todo-item .delete-btn:hover {
       color: #af5b5b;
+      background: rgba(204, 154, 154, 0.1);
+      border-radius: 3px;
     }
 
     /* === Footer === */
@@ -176,19 +210,20 @@
       border-radius: 3px;
       padding: 3px 7px;
       cursor: pointer;
-      transition: border-color 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
     }
 
     .filters button:hover {
       border-color: rgba(175, 47, 47, 0.15);
+      background: rgba(175, 47, 47, 0.05);
     }
 
     .filters button.active {
       border-color: rgba(175, 47, 47, 0.2);
-      outline: none;
+      outline: 2px solid rgba(175, 47, 47, 0.2);
     }
 
-    /* === Clear Completed === */
+    /* === Clear Completed Button === */
     #clear-completed {
       font-size: 13px;
       font-family: inherit;
@@ -197,12 +232,18 @@
       border: none;
       cursor: pointer;
       padding: 3px 4px;
-      transition: color 0.15s ease;
+      transition: color 0.15s ease, opacity 0.15s ease;
     }
 
-    #clear-completed:hover {
+    #clear-completed:hover:not(:disabled) {
       color: #4a4a4a;
       text-decoration: underline;
+    }
+
+    #clear-completed:disabled {
+      opacity: 0.3;
+      cursor: default;
+      text-decoration: none;
     }
 
     #clear-completed.hidden {
@@ -221,6 +262,50 @@
 
     .empty-state.hidden {
       display: none;
+    }
+
+    /* === Buttons (global hover/focus consistency) === */
+    button {
+      transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    /* === Responsive Design === */
+    @media (max-width: 480px) {
+      .container {
+        padding: 0 12px;
+        margin-top: 30px;
+      }
+
+      .header h1 {
+        font-size: 48px;
+      }
+
+      #new-todo {
+        font-size: 18px;
+        padding: 12px 12px 12px 48px;
+      }
+
+      .todo-item {
+        padding: 10px 12px;
+      }
+
+      .todo-item label {
+        font-size: 16px;
+      }
+
+      .todo-item .edit-input {
+        font-size: 16px;
+      }
+
+      .footer {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 16px;
+      }
     }
   </style>
 </head>
@@ -247,7 +332,7 @@
           <button id="filter-active">Active</button>
           <button id="filter-completed">Completed</button>
         </div>
-        <button id="clear-completed" class="hidden">Clear completed</button>
+        <button id="clear-completed" disabled>Clear completed</button>
       </div>
     </div>
 
@@ -380,19 +465,31 @@
           input.type = 'text';
           input.value = item.title;
           input.className = 'edit-input';
-          input.style.cssText = 'flex:1; font-size:20px; font-weight:300; padding:4px 0; border:1px solid #ccc; border-radius:3px; outline:none; font-family:inherit;';
           label.replaceWith(input);
           input.focus();
           input.select();
 
+          // Guard: prevent double-save when blur fires after Enter
+          let saved = false;
+
           function commitEdit() {
+            if (saved) return;
+            saved = true;
             editTodo(item.id, input.value);
           }
 
           input.addEventListener('blur', commitEdit);
           input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { input.blur(); }
-            if (e.key === 'Escape') { input.value = item.title; input.blur(); }
+            if (e.key === 'Enter') {
+              saved = true;
+              editTodo(item.id, input.value);
+              input.blur();
+            }
+            if (e.key === 'Escape') {
+              saved = true;
+              input.value = item.title;
+              input.blur();
+            }
           });
         });
 
@@ -411,11 +508,11 @@
       const activeCount = state.todos.filter(t => !t.completed).length;
       todoCountEl.textContent = activeCount + ' item' + (activeCount !== 1 ? 's' : '') + ' left';
 
-      // Clear completed visibility
+      // Clear completed disabled state
       const hasCompleted = state.todos.some(t => t.completed);
-      clearCompletedBtn.classList.toggle('hidden', !hasCompleted);
+      clearCompletedBtn.disabled = !hasCompleted;
 
-      // Empty state
+      // Empty state: show when no items visible (filtered)
       emptyStateEl.classList.toggle('hidden', filtered.length > 0);
     }
 
