@@ -91,14 +91,27 @@
       flex-shrink: 0;
     }
 
-    #todo-list li .todo-text {
+    #todo-list li .view {
       flex: 1;
       font-size: 18px;
       word-break: break-word;
     }
 
+    #todo-list li .edit {
+      flex: 1;
+      font-size: 18px;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    #todo-list li .edit:focus {
+      border-color: #e74c3c;
+    }
+
     /* Completed item */
-    #todo-list li.completed .todo-text {
+    #todo-list li.completed .view {
       text-decoration: line-through;
       opacity: 0.5;
     }
@@ -211,7 +224,8 @@
         padding: 10px 4px;
       }
 
-      #todo-list li .todo-text {
+      #todo-list li .view,
+      #todo-list li .edit {
         font-size: 16px;
       }
 
@@ -246,12 +260,12 @@
         <button class="filter-btn" data-filter="active">Active</button>
         <button class="filter-btn" data-filter="completed">Completed</button>
       </div>
-      <button id="clear-completed" disabled>Clear completed</button>
+      <button id="clear-completed">Clear completed</button>
     </footer>
   </div>
 
   <script>
-    // ============= Module A — Storage =============
+    // ============= Module A — Storage (TASK-1) =============
     const STORAGE_KEY = 'todo_items';
 
     function loadTodos() {
@@ -273,7 +287,7 @@
       }
     }
 
-    // ============= Module B — State =============
+    // ============= Module B — State (TASK-2) =============
     const state = {
       todos: [],
       filter: 'all'
@@ -288,7 +302,7 @@
         completed: false,
         createdAt: Date.now()
       };
-      state.todos = [item, ...state.todos]; // prepend (newest first)
+      state.todos = [item, ...state.todos];
       saveTodos(state.todos);
       return item;
     }
@@ -325,7 +339,7 @@
       const sorted = [...state.todos].sort((a, b) => b.createdAt - a.createdAt);
       if (state.filter === 'active') return sorted.filter(t => !t.completed);
       if (state.filter === 'completed') return sorted.filter(t => t.completed);
-      return sorted; // 'all'
+      return sorted;
     }
 
     // ============= Initialization =============
@@ -333,82 +347,165 @@
     state.filter = 'all';
 
     // ============= DOM refs =============
-    const form = document.getElementById('todo-form');
-    const input = document.getElementById('new-todo');
-    const list = document.getElementById('todo-list');
+    const newTodoInput = document.getElementById('new-todo');
+    const todoList = document.getElementById('todo-list');
     const itemCount = document.getElementById('item-count');
     const filterBtns = document.querySelectorAll('.filter-btn');
+    const filtersContainer = document.getElementById('filters');
     const clearCompletedBtn = document.getElementById('clear-completed');
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    // ============= Render =============
+    // ============= Module C — Render (TASK-3) =============
     function render() {
-      const filtered = getFilteredTodos();
-      list.innerHTML = filtered.map(t => `
-        <li class="${t.completed ? 'completed' : ''}" data-id="${t.id}">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} />
-          <span class="todo-text">${escapeHtml(t.title)}</span>
-          <button class="destroy">&times;</button>
-        </li>
-      `).join('');
+      const items = getFilteredTodos();
 
-      const activeCount = state.todos.filter(t => !t.completed).length;
-      itemCount.textContent = `${activeCount} ${activeCount === 1 ? 'item' : 'items'} left`;
-      clearCompletedBtn.disabled = !state.todos.some(t => t.completed);
+      // Clear list
+      todoList.innerHTML = '';
 
-      filterBtns.forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.filter === state.filter);
+      // Build each item as DOM nodes
+      items.forEach(function (item) {
+        const li = document.createElement('li');
+        li.setAttribute('data-id', item.id);
+
+        if (item.completed) {
+          li.classList.add('completed');
+        }
+
+        // Checkbox toggle
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'toggle';
+        checkbox.checked = item.completed;
+
+        // Title text (XSS safe via textContent)
+        const span = document.createElement('span');
+        span.className = 'view';
+        span.textContent = item.title;
+
+        // Destroy button
+        const destroyBtn = document.createElement('button');
+        destroyBtn.className = 'destroy';
+        destroyBtn.textContent = '\u00D7';
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(destroyBtn);
+        todoList.appendChild(li);
       });
+
+      // Update item count
+      const remaining = state.todos.filter(function (t) { return !t.completed; }).length;
+      itemCount.textContent = remaining + ' item' + (remaining !== 1 ? 's' : '') + ' left';
+
+      // Update filter buttons
+      filterBtns.forEach(function (btn) {
+        btn.classList.remove('selected');
+        if (btn.getAttribute('data-filter') === state.filter) {
+          btn.classList.add('selected');
+        }
+      });
+
+      // Update clear-completed visibility
+      clearCompletedBtn.style.display = state.todos.some(function (t) { return t.completed; }) ? 'block' : 'none';
     }
 
-    // ============= Event Handlers =============
-    // Add
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const item = addTodo(input.value);
-      if (item) {
-        input.value = '';
-        render();
-      }
-    });
+    // ============= Module D — Events (TASK-3) =============
 
-    // Toggle (delegated)
-    list.addEventListener('change', (e) => {
-      if (e.target.type === 'checkbox') {
-        const li = e.target.closest('li');
-        if (li) {
-          toggleTodo(li.dataset.id);
+    // commitEdit helper
+    function commitEdit(inputEl, id, originalTitle) {
+      var value = inputEl.value.trim();
+      if (value === '' || value === originalTitle) {
+        // Cancel: restore original span
+        var li = inputEl.closest('li');
+        var span = document.createElement('span');
+        span.className = 'view';
+        span.textContent = originalTitle;
+        inputEl.parentNode.replaceChild(span, inputEl);
+        return;
+      }
+      editTodo(id, value);
+      render();
+    }
+
+    // #new-todo keydown
+    newTodoInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var value = newTodoInput.value.trim();
+        if (value !== '') {
+          addTodo(value);
+          newTodoInput.value = '';
           render();
         }
       }
     });
 
-    // Delete (delegated)
-    list.addEventListener('click', (e) => {
-      if (e.target.classList.contains('destroy')) {
-        const li = e.target.closest('li');
-        if (li) {
-          deleteTodo(li.dataset.id);
-          render();
-        }
+    // #todo-list single click delegation (toggle / destroy)
+    todoList.addEventListener('click', function (e) {
+      var li = e.target.closest('li');
+      if (!li) return;
+      var id = li.getAttribute('data-id');
+
+      if (e.target.classList.contains('toggle')) {
+        toggleTodo(id);
+        render();
+      } else if (e.target.classList.contains('destroy')) {
+        deleteTodo(id);
+        render();
       }
     });
 
-    // Filters
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        state.filter = btn.dataset.filter;
-        render();
-      });
+    // #todo-list double-click on .view span (inline editing)
+    todoList.addEventListener('dblclick', function (e) {
+      if (e.target.classList.contains('view')) {
+        var span = e.target;
+        var li = span.closest('li');
+        var id = li.getAttribute('data-id');
+        var originalTitle = span.textContent;
+
+        var input = document.createElement('input');
+        input.className = 'edit';
+        input.value = originalTitle;
+
+        span.parentNode.replaceChild(input, span);
+        input.focus();
+        input.select();
+
+        function onKeydown(ev) {
+          if (ev.key === 'Enter') {
+            input.removeEventListener('keydown', onKeydown);
+            input.removeEventListener('blur', onBlur);
+            commitEdit(input, id, originalTitle);
+          } else if (ev.key === 'Escape') {
+            input.removeEventListener('keydown', onKeydown);
+            input.removeEventListener('blur', onBlur);
+            // Restore span
+            var restoredSpan = document.createElement('span');
+            restoredSpan.className = 'view';
+            restoredSpan.textContent = originalTitle;
+            input.parentNode.replaceChild(restoredSpan, input);
+          }
+        }
+
+        function onBlur() {
+          input.removeEventListener('keydown', onKeydown);
+          input.removeEventListener('blur', onBlur);
+          commitEdit(input, id, originalTitle);
+        }
+
+        input.addEventListener('keydown', onKeydown);
+        input.addEventListener('blur', onBlur);
+      }
     });
 
-    // Clear completed
-    clearCompletedBtn.addEventListener('click', () => {
+    // #filters click on .filter-btn
+    filtersContainer.addEventListener('click', function (e) {
+      if (e.target.classList.contains('filter-btn')) {
+        state.filter = e.target.getAttribute('data-filter');
+        render();
+      }
+    });
+
+    // #clear-completed click
+    clearCompletedBtn.addEventListener('click', function () {
       clearCompleted();
       render();
     });
