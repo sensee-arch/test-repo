@@ -633,13 +633,16 @@
         input.focus();
         input.select();
 
+        let saved = false; // Prevent double-save on Enter+blur
+
         function saveEdit() {
+          if (saved) return;
+          saved = true;
           const newVal = input.value.trim();
           if (newVal && newVal !== currentTitle) {
             editTodo(li.dataset.id, newVal);
           } else {
-            // Restore original, re-render
-            render();
+            render(); // Restore original
           }
         }
 
@@ -648,13 +651,13 @@
             ke.preventDefault();
             saveEdit();
           } else if (ke.key === 'Escape') {
+            saved = true;
             render(); // Cancel editing, restore
           }
         });
 
         input.addEventListener('blur', function () {
-          // Small delay to let Enter keydown fire first
-          setTimeout(saveEdit, 100);
+          setTimeout(saveEdit, 150);
         });
       });
 
