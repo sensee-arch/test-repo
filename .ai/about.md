@@ -1,73 +1,89 @@
-# .ai/about.md — AI Agent Project Constitution
+## 1. Project Overview
 
-## 项目概述
+- **Repository**: sensee-arch/test-repo
+- **Type**: Todo List Web Application (Single Page Application)
+- **Description**: A pure frontend Todo List SPA built with vanilla HTML/CSS/JS, using localStorage for persistence. Supports full CRUD operations, inline editing, filtering (All/Active/Completed), and clear completed.
+- **Target Users**: Individual users for personal task management
+## 2. Core Objectives
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+1. **Functional Completeness**: Provide full CRUD for todo items (create, read, update, delete) with completion status toggle.
+2. **Persistence**: All data persisted via browser localStorage; survive page refreshes.
+3. **Usability**: Inline editing via double-click, keyboard shortcuts (Enter/Escape), responsive layout.
+4. **Robustness**: Graceful error handling for localStorage limits, data corruption, and edge cases.
+5. **Security**: XSS-safe rendering (use textContent/innerText, never innerHTML).
+## 3. Technical Architecture
 
-## 核心目标
+### Architecture Pattern: Three-layer modular SPA
+- **Store Module** (data layer): Manages state (todos array, filter string), handles all mutations, syncs to localStorage.
+- **Renderer Module** (view layer): Pure rendering functions that take Store state and update the DOM. Stateless.
+- **EventHandler Module** (control layer): Listens to DOM events, calls Store methods, triggers Renderer.
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
-
-## 技术架构
-
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
-
-## 基础契约
-
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
-
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### Data Flow
+```
+User Action -> DOM Event -> EventHandler -> Store (mutate + persist) -> Renderer (re-render)
 ```
 
-## Agent 划分
+### Deployment
+Single `index.html` file. No build step. Hostable on any static file server or GitHub Pages.
+## 4. Base Contract
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Formatting
+- **HTML**: HTML5 semantic markup, class names prefixed for clarity (.new-todo, .todo-list, .filter)
+- **CSS**: CSS3 with Flexbox layout, no preprocessors
+- **JS**: Vanilla ES6+, no frameworks, no build tools
 
-## 运行与依赖
+### File Structure
+```
+src/web/todo/
+  index.html          # Main SPA file (HTML + CSS + JS inline or linked)
+  app.js              # Application logic (Store + Renderer + EventHandler)
+  style.css           # Stylesheet
+```
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### Naming
+- Branch: `flyinghub-YYYYMMDDHHmmss`
+- Commits: imperative present tense, e.g., "Add HTML structure"
+- JS identifiers: camelCase for variables/methods, PascalCase for constructors/interfaces
+## 5. Agent Division
 
-## 协作规则
+This project supports multiple AI Agents collaborating:
+- **Boot Agent**: Project setup, environment initialization, branch creation, about.md generation.
+- **Spec Agent**: Requirements specification generation.
+- **Plan Agent**: Technical plan and task breakdown.
+- **Coding Agent**: Implements individual tasks from the plan.
+- **Review Agent**: Code review and quality assurance.
+- **Auth Agent**: GitHub collaborator access management.
+## 6. Running & Dependencies
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### Dependencies
+- **Runtime**: Modern web browser (Chrome 60+, Firefox 55+, Safari 11+, Edge 15+)
+- **Backend**: None required (100% client-side)
+- **Python Dependencies** (for tooling):
+  - `requirements.txt`: fastapi, uvicorn[standard], pydantic
+  - `requirements-dev.txt`: pytest, ruff, httpx
 
-## 演进原则
+### Running
+1. Open `src/web/todo/index.html` in a browser, OR
+2. Serve locally: `python3 -m http.server 8000 -d src/web/todo`
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### Testing
+- Manual verification via browser
+- Automated: pytest for any backend utilities
+## 7. Collaboration Rules
+
+1. **Branch isolation**: Each developer works on their own `flyinghub-*` branch.
+2. **Commit discipline**: One commit per logical change. Clear message.
+3. **No force push**: Use `git push --force-with-lease` only when necessary.
+4. **Pull before push**: Always `git pull` to sync before pushing.
+5. **Respect file structure**: Do not move or rename project files without agreement.
+6. **Credential safety**: Never commit tokens, secrets, or `.env` files.
+7. **Code review**: All changes should be reviewed before merging to main.
+## 8. Evolution Principles
+
+1. **Keep it simple**: Prefer vanilla solutions; add dependencies only when justified.
+2. **Progressive enhancement**: Core features work without JS; rich experience with JS.
+3. **Accessibility**: Keyboard navigable, ARIA labels, screen-reader friendly.
+4. **Performance**: Optimize for <100ms response time; batch DOM updates.
+5. **Graceful degradation**: Handle localStorage errors, unsupported browsers with fallback.
+6. **Documentation**: Keep .ai/about.md and ARCH.md updated with architectural decisions.
+7. **Testability**: Pure functions where possible; side-effects isolated to Store module.
