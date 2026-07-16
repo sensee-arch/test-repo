@@ -1,73 +1,202 @@
-# .ai/about.md — AI Agent Project Constitution
+# Project Constitution (.ai/about.md)
 
-## 项目概述
+## 1. Project Overview
+- **Project**: test-repo
+- **Application**: Todo List Web App
+- **Stack**: Pure HTML5 / CSS3 / Vanilla JavaScript (ES6+)
+- **Architecture**: MVC (Model-View-Controller)
+- **Persistence**: localStorage (key: `todo_tasks`)
+- **Style**: Zero framework, zero build tools, zero external dependencies
+- **Target**: Modern browsers (Chrome, Firefox, Safari, Edge)
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+## 2. Core Objectives
+| Objective | Priority | Description |
+|-----------|----------|-------------|
+| CRUD Tasks | P0 | Create, Read, Update, Delete tasks |
+| Completion Toggle | P0 | Toggle task completed state via checkbox |
+| Inline Edit | P1 | Double-click to edit, Enter/blur to save, Escape to cancel |
+| Filter Views | P1 | All / Active / Completed filter switching |
+| Clear Completed | P1 | Remove all completed tasks with one click |
+| Live Stats | P1 | Display "X item(s) left" with real-time updates |
+| Security | P0 | textContent only (no innerHTML), try-catch for storage |
+| Responsive Design | P1 | Adapt to desktop, tablet, and mobile viewports |
 
-## 核心目标
+## 3. Technical Architecture
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+### 3.1 Architecture Pattern: MVC
+```
+User Action → EventHandler → Store (update data) → Renderer (re-render) → DOM
+                                        ↕
+                                  localStorage
+```
 
-## 技术架构
+### 3.2 Store (Model)
+```javascript
+class Store {
+  constructor()                    // Load from localStorage
+  getAll() → TodoItem[]            // All tasks, sorted by createdAt desc
+  add(text) → TodoItem|null        // Validate & add
+  update(id, changes) → TodoItem|null // Merge changes
+  delete(id)                       // Remove by id
+  getByFilter(filter) → TodoItem[] // 'all' | 'active' | 'completed'
+  clearCompleted()                 // Remove completed
+}
+```
+- Internal: `this.tasks` (private array), `STORAGE_KEY = '***'`
+- ID generation: 8-char random alphanumeric
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
-
-## 基础契约
-
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
-
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
+### 3.3 Renderer (View)
+```javascript
+class Renderer {
+  constructor()                    // Cache 9 DOM element references
+  render(tasks, filter)            // Main entry: list + stats + filter
+  renderTaskItem(task) → HTMLElement // Single <li>
+  renderStats(tasks)               // Update stats text
+  renderFilterButtons(filter)      // Highlight active filter
+  renderEmptyState() → HTMLElement // Empty placeholder
 }
 ```
 
-## Agent 划分
+### 3.4 EventHandler (Controller)
+```javascript
+class EventHandler {
+  constructor(store, renderer)     // DI: inject Store + Renderer
+  init()                           // Initial render + bind events
+  onAdd()                          // Add button / Enter key
+  onToggle(id)                     // Toggle completion
+  onDelete(id)                     // Delete task
+  onStartEdit(id)                  // Enter inline edit (dblclick)
+  onSaveEdit(id, newText)          // Save edit (Enter/blur)
+  onCancelEdit(id)                 // Cancel edit (Escape)
+  onFilterChange(filter)           // Switch filter
+  onClearCompleted()               // Clear completed
+}
+```
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### 3.5 Data Model (TodoItem)
+| Field | Type | Constraints |
+|-------|------|-------------|
+| id | string | 8-char random, unique |
+| text | string | 1-200 chars, trimmed |
+| completed | boolean | Default: false |
+| createdAt | number | Unix timestamp (ms) |
 
-## 运行与依赖
+### 3.6 Fixed DOM IDs
+| ID | Element | Purpose |
+|----|---------|---------|
+| #todo-input | input[type="text"] | New task input |
+| #todo-add-btn | button | Add task |
+| #todo-list | ul | Task list container |
+| #todo-stats | span/div | Stats display |
+| #filter-all | button | "All" filter |
+| #filter-active | button | "Active" filter |
+| #filter-completed | button | "Completed" filter |
+| #clear-completed | button | Clear completed |
+| .filter-bar | div | Filter container |
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### 3.7 Source Layout
+```
+src/web/todo/
+├── index.html     # HTML skeleton (all fixed DOM IDs)
+├── style.css      # Responsive styling (CSS variables, Flexbox)
+└── app.js         # MVC: Store + Renderer + EventHandler
+```
 
-## 协作规则
+## 4. Base Contract
+### 4.1 Security
+- **No innerHTML**: All DOM text via textContent
+- **No eval()**: No dynamic code execution
+- **Input validation**: Trim, non-empty, max 200 chars
+- **localStorage safety**: All operations wrapped in try-catch; in-memory fallback
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### 4.2 Code Quality
+- ES6 class syntax for all three MVC modules
+- UPPER_SNAKE_CASE for constants, camelCase for methods/variables
+- JSDoc-style comments on all class methods
+- Event delegation on #todo-list for click events
 
-## 演进原则
+### 4.3 Naming Conventions
+- File names: lowercase with hyphens (kebab-case)
+- CSS classes: lowercase with hyphens
+- JS classes: PascalCase
+- JS methods/variables: camelCase
+- JS constants: UPPER_SNAKE_CASE
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### 4.4 Branch Strategy
+- Feature branches: `flyinghub-YYYYMMDDHHmmss`
+- Main branch: `main` (protected, stable)
+
+## 5. Agent Division
+Three agents working in the MVC coding pipeline:
+
+| Agent | Role | Owns | Input | Output |
+|-------|------|------|-------|--------|
+| Worker-1 | HTML & CSS | index.html, style.css | Spec DOM ID contract | Complete static structure + styling |
+| Worker-2 | Store + Renderer | Store class, Renderer class | Spec data model + DOM contract | Data layer + view layer |
+| Worker-3 | EventHandler | EventHandler class, integration | All prior work + event spec | Controller + final integration |
+
+Dependency flow:
+```
+Worker-1 (HTML)    Worker-2 (Store)
+       ↘               ↙
+    Worker-2 (Renderer)
+           ↓
+    Worker-3 (EventHandler + Integration)
+```
+
+## 6. Running & Dependencies
+### 6.1 Runtime
+- **Zero** runtime dependencies
+- Open `src/web/todo/index.html` directly in browser (file:// or any static server)
+- No build step, no package manager, no server required
+
+### 6.2 Development Tools
+- Python 3 (for generation scripts only, not for the app)
+- Git for version control
+- No npm, pip, or CDN dependencies
+
+### 6.3 Testing
+- Manual testing via browser (Chrome DevTools)
+- Test against all 34 acceptance criteria
+- Verify localStorage persistence by refresh
+
+## 7. Collaboration Rules
+### 7.1 Communication
+- Spec document is the single source of truth for all implementation decisions
+- Interface contracts between Store → Renderer → EventHandler must not be broken
+- Any deviation from DOM ID contract or CSS class contract requires spec update
+
+### 7.2 Code Review
+- Verify no innerHTML in any file
+- Verify all 9 DOM IDs match exactly
+- Verify all 7 CSS class names match exactly
+- Verify all input paths are validated (add + edit)
+- Verify all localStorage paths are try-catch wrapped
+
+### 7.3 Conflict Resolution
+- If a Worker cannot complete its module due to missing interface, immediately request the upstream dependency
+- If breaking changes needed, update .ai/about.md first
+- Integration issues escalate to full re-render path audit
+
+## 8. Evolution Principles
+### 8.1 Adding Features
+- New features must follow the MVC pattern
+- New DOM elements must use textContent (no innerHTML)
+- New storage fields must be backward-compatible with existing localStorage schema
+- New CSS classes must follow the established naming convention
+
+### 8.2 Refactoring
+- Store is the only module that touches localStorage
+- Renderer is the only module that touches the DOM
+- EventHandler coordinates but never directly manipulates data or DOM
+- This strict layering enables isolated testing
+
+### 8.3 Performance
+- O(n) rendering is acceptable for practical usage (<1000 tasks)
+- localStorage 5MB limit acts as natural ceiling
+- No virtual DOM or diffing needed
+
+### 8.4 Maintenance
+- This file (.ai/about.md) must be updated whenever architecture, contracts, or conventions change
+- Daily notes in memory/YYYY-MM-DD.md for tracking progress
+- MEMORY.md for long-term project context
