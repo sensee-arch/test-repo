@@ -1,73 +1,115 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+## 1. 项目概述
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **仓库**: `https://github.com/sensee-arch/test-repo`
+- **用途**: 实验性/测试项目，为 AI Agent 协作编程提供试验场
+- **当前状态**: Todo List Web SPA 已实现（纯 HTML/CSS/JavaScript，浏览器 localStorage 持久化）
+- **规划中**: Python FastAPI 后端服务 + RESTful API
+- **项目支持**: AI Agent 全流程协作：需求 → 规格 → 方案 → 任务分配 → 编码 → 审核
+- **已授权协作者**: `wangxi0618`
 
-## 核心目标
+### 目录结构
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
+```
+test-repo/
+├── .ai/
+│   └── about.md          # 项目宪法（本文件）
+├── ARCH.md               # 架构文档
+├── LICENSE                # 许可证
+├── requirements.txt       # Python 依赖（FastAPI 等）
+├── requirements-dev.txt   # 开发依赖（pytest, ruff, httpx）
+└── src/
+    └── web/
+        └── todo/          # Todo SPA 代码目录
+```
+
+## 2. 核心目标
+
+- ✅ **Todo SPA**: 完整的 CRUD + 完成状态切换 + 三视图过滤（全部/活跃/已完成）+ localStorage 持久化
 - ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ⏳ **FastAPI 后端**: RESTful API 服务，Pydantic 数据模型，Uvicorn 运行
+- ⏳ 标准化 AI Agent 协作工作流沉淀
+- ❌ 不追求多端同步、PWA、推送通知
+- ❌ 不追求认证/登录系统
 
-## 技术架构
+## 3. 技术架构
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+### 当前（Todo SPA）
 
-## 基础契约
+- **架构风格**: 单体 SPA（Single-Page Application）
+- **核心模块**:
+  - `Store` 模块: 数据层 — CRUD 操作、localStorage 读写、应用状态管理
+  - `Renderer` 模块: 视图层 — 将数据渲染为 DOM、列表更新模板
+  - `EventHandler` 模块: 控制层 — 事件绑定、委托、协调 Store 和 Renderer
+- **数据流**: 用户操作 → EventHandler → Store 更新 state + localStorage → Renderer 刷新 DOM
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+### 规划中（FastAPI 后端）
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
+- **框架**: FastAPI + Pydantic
+- **运行**: Uvicorn ASGI 服务器
+- **API 风格**: RESTful JSON API
+- **数据层**: 待定（SQLite / 内存存储）
+
+## 4. 基础契约
+
+### 数据模型
+
+```typescript
+interface TodoItem {
+  id: string;          // 唯一标识
+  title: string;       // 待办内容
+  completed: boolean;   // 完成状态
+  createdAt: number;    // 创建时间戳
 }
 ```
 
-## Agent 划分
+### 安全规则
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+- 禁止使用 `innerHTML` 渲染用户输入 — 必须使用 `textContent`
+- 禁止使用 `eval()`、`new Function()` 执行动态代码
+- 事件处理器使用后需清理（`removeEventListener`），防止重复绑定
+- localStorage 写操作需包裹 `try/catch`，静默降级
 
-## 运行与依赖
+### Git 提交规范
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+- 提交信息格式: `[Tag] 简短描述`
+- Tag 规则: `[Init]` 初始化, `[Feat]` 新功能, `[Fix]` 修复, `[Doc]` 文档, `[Refactor]` 重构
+- 分支命名: `flyinghub-YYYYMMDDHHmmss`
 
-## 协作规则
+## 5. Agent 分工
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+| 角色 | 职责 |
+|------|------|
+| **Host**（主持人） | 群聊主持，宣布主题，协调沟通 |
+| **Manager**（项目经理） | 需求分析、任务分解、进度跟踪 |
+| **Developer**（开发者） | 编码实现、单元测试、问题修复 |
+| **Reviewer**（审核人） | 代码审查、质量控制、验收测试 |
 
-## 演进原则
+## 6. 运行与依赖
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### Todo SPA（当前）
+
+- **运行方式**: 浏览器直接打开 `src/web/todo/index.html`
+- **依赖**: 无（纯前端，零外部依赖）
+
+### FastAPI 后端（规划中）
+
+- **运行方式**: `uvicorn src.api.main:app --reload`
+- **依赖**: 见 `requirements.txt`（FastAPI, Uvicorn, Pydantic）
+- **开发工具**: pytest, ruff, httpx（见 `requirements-dev.txt`）
+
+## 7. 协作规则
+
+- 所有 AI Agent 操作必须在独立 feature branch 上进行
+- 功能完成后通过 PR 合并到 `main` 分支
+- 每次变更需更新 `.ai/about.md` 保持同步
+- 禁止直接向 `main` 分支推送代码
+- 每个 Agent 任务完成后，需提交变更总结
+
+## 8. 进化原则
+
+- `.ai/about.md` 是**唯一真相来源**，随项目演进持续更新
+- 新功能引入需先经过 `/spec` 输出规格文档
+- 重大架构变更需同步更新 `ARCH.md`
+- 项目目标（Section 2）也需同步更新
