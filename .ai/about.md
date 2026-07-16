@@ -1,73 +1,93 @@
-# .ai/about.md — AI Agent Project Constitution
+# Project Constitution
 
-## 项目概述
+## 1. Project Overview
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **Project Name**: test-repo
+- **Description**: 自动化测试创建的Hub — A test repository for automation testing purposes
+- **Repository**: https://github.com/sensee-arch/test-repo
+- **Language**: English (docs), Chinese (channels)
+- **Purpose**: Automation workflow testing, CI/CD pipeline validation, development workflow experimentation
 
-## 核心目标
+## 2. Core Objectives
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- **Test automation**: Validate FlyingHub platform automation workflows end-to-end
+- **Development pipeline**: Demonstrate boot → setup → spec → plan → contract → coding → review → summary pipeline
+- **Clean state**: Each feature branch starts fresh from main for reproducible testing
+- **Traceability**: All actions logged via action_trace for audit and debugging
 
-## 技术架构
+## 3. Technical Architecture
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **Stack**: Pure HTML/CSS/JS (no backend, no frameworks, no build tools)
+- **Persistence**: Web Storage API (localStorage, ~5MB per origin, synchronous JSON)
+- **Architecture Pattern**: MVC 3-Layer (Model-View-Controller)
+  - **Store** (Model): Task CRUD, input validation, localStorage persistence, error recovery
+  - **Renderer** (View): DOM construction, stats display, filter state, empty state
+  - **EventHandler** (Controller): Event binding, user interaction flow, Store↔Renderer coordination
+- **Data Flow**: Unidirectional — User Input → EventHandler → Store → _save() → Renderer → DOM
+- **Files**: `src/web/todo/index.html`, `src/web/todo/style.css`, `src/web/todo/app.js`
 
-## 基础契约
+### Interface Contracts
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+| Module | Exports | Contract |
+|--------|---------|----------|
+| Store | class Store | `add(text)→task\|null`, `update(id,changes)→task\|null`, `delete(id)`, `getAll()→tasks[]`, `getByFilter(filter)→tasks[]`, `clearCompleted()` |
+| Renderer | class Renderer | `render(tasks, filter)`, `renderTaskItem(task)→HTMLElement`, `renderStats(tasks)`, `renderFilterButtons(filter)` |
+| EventHandler | class EventHandler | `init()`, `onAdd()`, `onToggle(id)`, `onDelete(id)`, `onStartEdit(id)`, `onFilterChange(filter)`, `onClearCompleted()` |
+| DOM IDs | Fixed 9 elements | `#todo-input`, `#todo-add-btn`, `#todo-list`, `#todo-stats`, `#filter-all`, `#filter-active`, `#filter-completed`, `#clear-completed`, `.filter-bar` |
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
-```
+### Security Constraints
 
-## Agent 划分
+- `textContent` only — NO `innerHTML` under any circumstance
+- `try-catch` wrapping for all localStorage operations
+- Input validation: empty text rejected, >200 chars rejected, whitespace-only rejected
+- No `eval()`, no `new Function()`, no string-based DOM construction
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+## 4. Base Contract
 
-## 运行与依赖
+- **Language**: All code and comments in English
+- **Commit format**: `[Phase] Action description` (e.g., `[Boot] add project constitution document`)
+- **Branch naming**: `flyinghub-YYYYMMDDHHmmss` (timestamped from main)
+- **Output format**: Pure JSON only — no markdown code blocks, no extra commentary
+- **Base64 encoding**: All `_doc`, `_trace` string fields must be base64-encoded
+- **Spec storage**: `spec_doc` JSON field only — never written to file
+- **Session isolation**: Each workflow run uses a fresh timestamped branch from main
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+## 5. Agent Division
 
-## 协作规则
+| Role | Responsibilities |
+|------|-----------------|
+| **Boot Agent** | Check project existence, git status, branch health, working tree |
+| **Setup Agent** | Branch creation, git pull/push, project constitution generation |
+| **Spec Agent** | Requirements analysis, spec generation (8 chapters, 8 FRs, 12 ACs) |
+| **Plan Agent** | Technical architecture design, task decomposition (9 tasks), risk analysis |
+| **Contract Agent** | Worker assignment, delivery standards, dependency protocol, collaboration rules |
+| **Coding Agent** | Implementation per tasks (HTML/CSS/JS), inline edit, filter, security hardening |
+| **Review Agent** | Integration testing, acceptance criteria verification, quality check |
+| **Summary Agent** | Final close-out report, lessons learned, status broadcast |
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+## 6. Running & Dependencies
 
-## 演进原则
+- **Runtime**: No build step; static files only, served via file:// or any HTTP static server
+- **Dependencies**: Zero external dependencies (no CDN, no npm, no pip)
+- **Python**: Used only for generation scripts (spec, plan, contract) — not for the app itself
+- **Node.js**: Not required for the app; OpenClaw runtime environment
+- **Source directory**: `src/web/todo/` — contains index.html, style.css, app.js
+- **Testing**: Manual visual testing via browser; localStorage inspection via DevTools
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+## 7. Collaboration Rules
+
+- **Single source of truth**: Spec document lives in `spec_doc` field — never duplicated to disk
+- **Stash before branch**: Dirty working tree stashed before switching branches
+- **Push after create**: Every feature branch pushed to origin immediately after creation
+- **No force push**: Never rebase or force-push to shared branches
+- **No empty commits**: Skip commit when there are no changes to record
+- **Auto-fix first**: Attempt self-healing before escalating errors
+- **Escalation only for**: OS permissions, auth failures, resource limits, hard constraints
+
+## 8. Evolution Principles
+
+- **Incremental builds**: Each task builds on previous; dependency DAG respected
+- **Phase gates**: Phase I (Foundation: HTML+CSS+Store) → Phase II (Core: Renderer+EventHandler) → Phase III (Polish: Edit+Filter+Security+Integration)
+- **MVC decoupling**: No layer directly manipulates another's internals; Store never touches DOM, Renderer never touches data
+- **Defensive coding**: All external inputs validated; all storage ops wrapped in try-catch; all DOM writes use textContent
+- **Traceability**: Every generation script produces action_trace with Reasoning→Decision→Action→Observation→Reflection
