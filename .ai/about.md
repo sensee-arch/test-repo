@@ -1,73 +1,132 @@
-# .ai/about.md — AI Agent Project Constitution
+# About test-repo
 
-## 项目概述
+## 1. Project Overview
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+test-repo is a test project under the 测试Hub ecosystem. It serves as a collaborative playground for AI Agent development workflow validation and experimentation. The project currently features a pure frontend Todo List SPA (Single Page Application) in `src/web/todo/`, with planned backend expansion using Python/FastAPI.
 
-## 核心目标
+- **Repository**: https://github.com/sensee-arch/test-repo
+- **Hub**: 测试Hub
+- **Status**: Active development
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+## 2. Core Objectives
 
-## 技术架构
+- **Near-term (completed)**: Implement a zero-dependency Todo List web application with vanilla JavaScript, HTML5, CSS3, and localStorage persistence.
+- **Medium-term (planned)**: Add a Python/FastAPI backend with SQLite database, RESTful API, and user authentication.
+- **Long-term**: Demonstrate AI Agent collaboration workflows and serve as a reference architecture for similar projects.
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+## 3. Technical Architecture
 
-## 基础契约
+### Current Architecture (Todo SPA)
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+```
+┌──────────────────────────────────────┐
+│            index.html                 │
+│  Store ←→ Renderer ←→ EventHandler   │
+│         ↕ (localStorage)              │
+└──────────────────────────────────────┘
+```
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
+- **Language**: Vanilla JavaScript ES6+, HTML5, CSS3
+- **Storage**: Web Storage API (localStorage, key: `todo_items`)
+- **External Dependencies**: Zero (no frameworks, no CDN)
+- **Dev Tools**: ruff (code style), pytest (testing)
+
+### Planned Architecture (Full Stack)
+
+- **Backend**: Python/FastAPI + Uvicorn
+- **Database**: SQLite via SQLAlchemy
+- **Frontend**: SPA with API client layer
+
+## 4. Base Contract
+
+### Module Contracts (Current)
+
+| Module | Responsibility | Interface |
+|--------|---------------|-----------|
+| Store | State management + localStorage sync | `init()`, `addTodo()`, `toggleTodo()`, `deleteTodo()`, `updateTodo()`, `clearCompleted()`, `setFilter()`, `getFilteredTodos()` |
+| Renderer | DOM construction & view updates | `render()`, `renderItem()`, `enterEditMode()`, `exitEditMode()`, `updateCount()`, `highlightFilter()` |
+| EventHandler | Event orchestration | `init()`, `handleAdd()`, `handleToggle()`, `handleDelete()`, `handleDblClick()`, `handleFilter()`, `handleClearCompleted()` |
+
+### Data Contract
+
+```javascript
+TodoItem {
+  id: string,          // Date.now().toString(36) + random char
+  title: string,       // 1-500 chars, trimmed
+  completed: boolean,  // false = active, true = completed
+  createdAt: number    // Date.now() timestamp
 }
 ```
 
-## Agent 划分
+### Storage
+- **Key**: `todo_items`
+- **Format**: JSON-serialized `TodoItem[]`
+- **Error handling**: try/catch on parse, fallback to `[]`
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Security Rules
+- **NEVER** use `innerHTML` — always `textContent` + `createElement`
+- **NEVER** use `eval()` or `new Function()`
+- Sanitize title input (trim, max 500 chars, reject whitespace-only)
 
-## 运行与依赖
+## 5. Agent Division
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+| Role | Agent | Responsibility |
+|------|-------|---------------|
+| 🏗️ Architect | Javis | System design, architecture decisions, module boundaries |
+| 💻 Developer | Javis | Implementation, testing, code review |
+| 🧪 QA  | Javis | Integration testing, acceptance criteria verification |
+| 📋 Scripter | Javis | Specification writing, plan generation, documentation |
+| 🚀 DevOps | Javis | CI/CD, git operations, environment setup |
 
-## 协作规则
+## 6. Running & Dependencies
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### Frontend (Current)
+- No build step required — open `src/web/todo/index.html` directly in a browser
+- Pure static files, works offline after first load
 
-## 演进原则
+### Backend (Planned)
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+# Run server
+uvicorn src.web.main:app --reload
+```
+
+### Requirements
+- `requirements.txt`: fastapi, uvicorn[standard], pydantic
+- `requirements-dev.txt`: pytest, httpx, ruff
+
+### First-time Setup
+```bash
+git clone https://github.com/sensee-arch/test-repo.git
+cd test-repo
+```
+
+## 7. Collaboration Rules
+
+### Git Convention
+- **Branch naming**: `flyinghub-YYYYMMDDHHmmss` (per-session feature branches)
+- **Commit style**: Clear imperative messages describing what was done
+- **PR process**: Create PR via GitHub web interface from feature branch into `main`
+
+### Coding Standards
+- Vanilla JS: ES6+ syntax, `const`/`let` over `var`
+- CSS: responsive design (320px–1920px), BEM-like class naming
+- Rendered via `createElement` + `textContent` — no `innerHTML` under any circumstances
+
+### AI Agent Protocol
+- Each `group_direct` request is treated as **fresh and independent** — no cross-request memory
+- All artifacts (specs, plans, docs) stored in `.ai/` directory
+- Status broadcasts use [Boot], [Spec], [Plan], [Coding], [Review] tags
+- Output format: valid JSON with base64-encoded document fields
+
+## 8. Evolution Principles
+
+1. **Simplicity first**: Use the simplest viable solution; add complexity only when justified
+2. **Zero external dependencies for frontend**: Maximize portability and longevity
+3. **Explicit over implicit**: All module interfaces clearly documented in ARCH.md and this file
+4. **Security by design**: NO innerHTML, NO eval, NO unsanitized user input
+5. **Incremental development**: Feature branches → small commits → integration testing
+6. **Documentation as code**: `.ai/about.md` and `ARCH.md` are living documents kept in sync with implementation
+7. **Backward compatibility**: API changes must preserve or extend existing contracts, never break them without major version bump
