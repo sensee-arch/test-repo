@@ -1,73 +1,153 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+> 更新日期: 2026-07-17
+> 仓库: https://github.com/sensee-arch/test-repo
+> 工作分支: flyinghub-20260717194844
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+---
 
-## 核心目标
+## 1. 项目概述
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+**test-repo** 是一个 AI Agent 协作编程实验项目，提供标准化的多 Agent 协作工作流试验场。
 
-## 技术架构
+- 定位：AI Agent 协作编程的实验工场，用于验证和沉淀 Agent 协作最佳实践
+- 仓库：https://github.com/sensee-arch/test-repo
+- 分支策略：`main` 为稳定主分支，功能分支命名格式 `flyinghub-YYYYMMDDHHmmss`
+- 包含子项目：Web Todo List SPA（纯前端演示）、待定子项目
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+## 2. 核心目标
 
-## 基础契约
+- ✅ 建立 AI Agent 协作编程的标准工作流（需求 → 方案 → 开发 → 审核）
+- ✅ 提供 Agent 协作的模板和规范沉淀（.ai/about.md、ARCH.md）
+- ✅ 验证 FastAPI + Python 技术栈的 Agent 协作开发流程
+- ✅ 包含可运行的演示子项目（Todo SPA）
+- ❌ 不涉及生产部署和运维
+- ❌ 不追求高可用和性能优化
+- ❌ 不跨项目共享 Agent 状态（每个 Hub 独立管理）
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+## 3. 技术架构
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### 整体架构
+
+```
+test-repo/
+├── .ai/                  # AI Agent 项目规约（本文件）
+├── docs/                 # 项目文档
+│   └── adr/             # 架构决策记录
+├── src/                  # 子项目源代码（按子项目组织）
+├── ARCH.md               # 架构总览文档
+├── requirements.txt      # 生产依赖
+├── requirements-dev.txt  # 开发依赖
+└── README.md             # 项目说明（待补充）
 ```
 
-## Agent 划分
+### 推荐技术栈
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
+| 层次 | 推荐 | 备选 |
+|------|------|------|
+| 后端框架 | FastAPI (Python 3.11+) | Flask, Express |
+| 数据库 | SQLite / PostgreSQL | MySQL, MongoDB |
+| API 风格 | RESTful | GraphQL |
+| 测试 | pytest + httpx | unittest |
+| 代码规范 | ruff | black, isort |
+| CI/CD | GitHub Actions | — |
+
+### 数据流
+
+用户/Agent → 群聊指令 → /spec → /plan → /coding → 代码提交 → 审核 → 合并
+
+## 4. 基础契约
+
+### 文档规范
+- `.ai/about.md`: 项目宪法，Agent 理解项目的唯一入口
+- `ARCH.md`: 架构总览文档，技术选型和目录约定
+- `docs/adr/`: 架构决策记录（ADR），记录关键决策
+
+### 代码规范
+- Python: PEP 8 标准，使用 ruff 检查
+- 类型注解：所有函数参数和返回值必须标注类型
+- 提交格式：`<type>: <描述>`（feat/fix/docs/refactor/test/chore/style）
+
+### 分支策略
+- `main`: 稳定主分支，始终可运行
+- `flyinghub-YYYYMMDDHHmmss`: 功能开发分支，开发完成合并到 main
+
+### 禁止行为
+- 禁止在代码库中存储敏感信息（Token、密码、密钥）
+- 禁止使用 `eval()` / `exec()` / `new Function()` 执行动态代码
+- 禁止跨 Hub 共享 Agent 上下文或状态
+
+## 5. Agent 划分
+
+| 角色 | 职责 | 输入 | 输出 |
+|------|------|------|------|
+| Host | 群聊主持人，发送状态广播 | 用户消息 | 群聊消息 |
+| Manager | 需求分析、技术方案、契约制定 | 用户需求 + Spec | Plan + Contract |
 | Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
 | Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
 
-## 运行与依赖
+### 工作流
+```
+用户需求 → Manager 生成 Spec → Manager 分解 Plan → Developer 编码 → Reviewer 审核 → 合并
+```
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+## 6. 运行与依赖
 
-## 协作规则
+### 环境要求
+- Python 3.11+
+- Git 已配置
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### 初始化
+```bash
+git clone https://github.com/sensee-arch/test-repo.git
+cd test-repo
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
 
-## 演进原则
+### 运行
+- 后端开发：`uvicorn src.api.main:app --reload`
+- 测试：`pytest --cov=src tests/`
+- 代码检查：`ruff check .`
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### 无需
+- Docker（简化开发环境）
+- 外部服务（数据库、缓存、消息队列）
+
+## 7. 协作规则
+
+### 日志规范
+- 通过 `action_trace`（Base64 编码 Markdown）记录操作步骤和错误
+- 包含：## Reasoning、## Decision、## Action、## Observation、## Reflection
+
+### 契约优先
+- 编码前必须先完成 Spec → Plan → Contract 文档
+- Agent 首次进入项目必须先读取 `.ai/about.md`
+
+### 上下文管理
+- 每个 Hub 独立维护自己的分支和文档
+- 禁止依赖历史记忆或跨 Hub 状态
+
+### 沟通规范
+- 消息前缀：`[Boot]`、`[Plan]`、`[Spec]`、`[Coding]`、`[Review]`
+- 群聊消息保持信息密集、客观、无冗余
+
+## 8. 演进原则
+
+### 增量演进
+- 新功能优先通过新增模块实现，不破坏现有模块边界
+- 重大变更需通过 ADR 记录决策过程和备选方案
+
+### 契约驱动
+- 任何新功能必须先完成 Spec 和 Contract 再编码
+- 架构变更必须同步更新 ARCH.md 和 .ai/about.md
+
+### 可替换性
+- 组件间通过接口解耦，降低替换成本
+- 技术选型优先考虑生态成熟、文档完善的技术
+
+### 知识沉淀
+- 协作过程中发现的最佳实践沉淀到 `.ai/about.md`
+- 架构决策记录到 `docs/adr/`
