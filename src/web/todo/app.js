@@ -443,9 +443,13 @@ const Events = (function () {
   }
 
   /**
-   * Cancel the current edit mode and restore.
+   * Cancel the current edit mode and restore (Escape key).
    */
   function cancelEditMode() {
+    if (currentEditInput && boundEditKeydown && boundEditBlur) {
+      currentEditInput.removeEventListener('keydown', boundEditKeydown);
+      currentEditInput.removeEventListener('blur', boundEditBlur);
+    }
     State.setEditing(null);
     Render.render();
     currentEditInput = null;
