@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>📋 Todo List</h1>
+    </header>
+
+    <main class="app-main">
+      <!-- Add Task Form -->
+      <form class="task-form" id="taskForm" autocomplete="off">
+        <div class="input-group">
+          <input
+            type="text"
+            id="taskInput"
+            class="task-input"
+            placeholder="What needs to be done?"
+            maxlength="200"
+            required
+          >
+          <button type="submit" class="btn btn-primary" id="addBtn">Add</button>
+        </div>
+      </form>
+
+      <!-- Filter Tabs -->
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+
+      <!-- Task List -->
+      <section class="task-list" id="taskList" aria-label="Task list">
+        <p class="empty-state" id="emptyState">No tasks yet. Add one above!</p>
+        <ul class="task-items" id="taskItems"></ul>
+      </section>
+
+      <!-- Stats Bar -->
+      <footer class="stats-bar" id="statsBar">
+        <span class="stats-count" id="statsCount">0 items left</span>
+        <button class="btn btn-text" id="clearCompletedBtn">Clear completed</button>
+      </footer>
+    </main>
+  </div>
+
+  <script src="scripts.js" type="module"></script>
+</body>
+</html>
