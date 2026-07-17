@@ -3,66 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Todo List 单页应用 — 简洁的任务管理工具">
+  <meta name="description" content="Todo List 单页应用">
   <title>Todo List</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="header">
-    <div class="header__container">
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
       <h1 class="header__title">📋 Todo List</h1>
-      <p class="header__subtitle">Keep track of your tasks</p>
-    </div>
-  </header>
+      <p class="header__subtitle">组织你的每一天</p>
+    </header>
 
-  <main class="main">
-    <section class="todo">
-      <form class="todo__form" id="todoForm">
-        <div class="todo__input-group">
+    <!-- Main -->
+    <main class="main">
+      <!-- Add Todo Form -->
+      <section class="todo-form">
+        <form class="todo-form__form" id="addForm">
           <input
             type="text"
-            class="todo__input"
+            class="todo-form__input"
             id="todoInput"
-            placeholder="What needs to be done?"
-            autocomplete="off"
-            required
+            placeholder="输入新的待办事项..."
+            maxlength="200"
+            autofocus
           >
-          <button type="submit" class="todo__add-btn" id="addBtn">＋ Add</button>
+          <button type="submit" class="todo-form__submit btn btn--primary">
+            添加
+          </button>
+        </form>
+      </section>
+
+      <!-- Toolbar -->
+      <section class="toolbar">
+        <div class="toolbar__filters">
+          <button class="toolbar__filter btn btn--filter btn--filter--active" data-filter="all">全部</button>
+          <button class="toolbar__filter btn btn--filter" data-filter="active">未完成</button>
+          <button class="toolbar__filter btn btn--filter" data-filter="completed">已完成</button>
         </div>
-      </form>
-
-      <div class="todo__toolbar" id="toolbar">
-        <span class="todo__count" id="itemCount">0 items left</span>
-        <div class="todo__filters">
-          <button class="todo__filter todo__filter--active" data-filter="all">All</button>
-          <button class="todo__filter" data-filter="active">Active</button>
-          <button class="todo__filter" data-filter="completed">Completed</button>
+        <div class="toolbar__actions">
+          <span class="toolbar__count" id="itemCount">0 项待办</span>
+          <button class="toolbar__clear btn btn--text" id="clearCompleted">清除已完成</button>
         </div>
-        <button class="todo__clear-btn" id="clearCompleted">Clear completed</button>
-      </div>
+      </section>
 
-      <ul class="todo__list" id="todoList">
-        <!-- Tasks rendered by JS -->
-      </ul>
+      <!-- Todo List -->
+      <section class="todo-list" id="todoList" aria-label="待办事项列表">
+        <!-- Dynamically rendered -->
+      </section>
 
-      <div class="todo__tips">
-        <p>💡 Press <kbd>Enter</kbd> to add · Click checkbox to toggle · Click ✕ to delete</p>
-      </div>
-    </section>
+      <!-- Empty State -->
+      <section class="empty-state" id="emptyState" hidden>
+        <p class="empty-state__icon">🎯</p>
+        <p class="empty-state__text">还没有待办事项，添加一个吧！</p>
+      </section>
+    </main>
 
-    <section class="actions">
-      <h2 class="actions__title">Manage</h2>
-      <div class="actions__group">
-        <button class="actions__btn" id="exportBtn">📥 Export JSON</button>
-        <button class="actions__btn" id="importBtn">📤 Import JSON</button>
-        <input type="file" id="importFile" accept=".json" hidden>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <p class="footer__text">Todo List App · Built with HTML5 + CSS3 + Vanilla JS</p>
-  </footer>
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer__text">数据存储在浏览器本地</p>
+    </footer>
+  </div>
 
   <script src="app.js"></script>
 </body>

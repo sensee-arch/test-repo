@@ -1,323 +1,391 @@
-/* ============================================
-   Todo List — Application Logic
-   Model: localStorage CRUD + Task data model
-   Controller: Event binding, DOM ops, rendering
-   ============================================ */
+/* =========================================
+   Todo List App — Model + Controller
+   ========================================= */
 
-'use strict';
+(function () {
+  'use strict';
 
-/* ══════════════════════════════════════════
-   Model Layer
-   ══════════════════════════════════════════ */
+  // =========================================
+  // Model Layer — Data & Persistence
+  // =========================================
 
-const STORAGE_KEY = 'todos';
-
-/** Generate a unique id */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
-
-/** Create a new Task object */
-function createTask(text) {
-  return {
-    id: uid(),
-    text: text.trim(),
-    completed: false,
-    createdAt: new Date().toISOString(),
-  };
-}
-
-/** Load tasks from localStorage */
-function loadTasks() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
+  /** Generate a simple unique id */
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   }
-}
 
-/** Save tasks to localStorage */
-function saveTasks(tasks) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-/** Add a new task */
-function addTask(text) {
-  const tasks = loadTasks();
-  const task = createTask(text);
-  tasks.push(task);
-  saveTasks(tasks);
-  return task;
-}
-
-/** Toggle task completion by id */
-function toggleTask(id) {
-  const tasks = loadTasks();
-  const idx = tasks.findIndex((t) => t.id === id);
-  if (idx === -1) return null;
-  tasks[idx].completed = !tasks[idx].completed;
-  saveTasks(tasks);
-  return tasks[idx];
-}
-
-/** Delete a task by id */
-function deleteTask(id) {
-  let tasks = loadTasks();
-  const filtered = tasks.filter((t) => t.id !== id);
-  if (filtered.length === tasks.length) return false;
-  saveTasks(filtered);
-  return true;
-}
-
-/** Clear all completed tasks, return count removed */
-function clearCompleted() {
-  const tasks = loadTasks();
-  const active = tasks.filter((t) => !t.completed);
-  const removed = tasks.length - active.length;
-  saveTasks(active);
-  return removed;
-}
-
-/** Export tasks as JSON string */
-function exportTasks() {
-  return JSON.stringify(loadTasks(), null, 2);
-}
-
-/** Import tasks from parsed JSON, returns true on success */
-function importTasks(parsed) {
-  if (!Array.isArray(parsed)) return false;
-  for (const item of parsed) {
-    if (typeof item.id !== 'string' || typeof item.text !== 'string' ||
-        typeof item.completed !== 'boolean') {
-      return false;
+  /** Task data model */
+  class Task {
+    constructor(title) {
+      this.id = generateId();
+      this.title = title.trim();
+      this.completed = false;
+      this.createdAt = new Date().toISOString();
     }
   }
-  saveTasks(parsed);
-  return true;
-}
 
-/* ══════════════════════════════════════════
-   Controller / View Layer
-   ══════════════════════════════════════════ */
+  /** localStorage CRUD wrapper */
+  const Store = {
+    KEY: 'todos',
 
-/** Current filter: 'all' | 'active' | 'completed' */
-let currentFilter = 'all';
-
-/** DOM refs */
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
-
-const todoForm = $('#todoForm');
-const todoInput = $('#todoInput');
-const todoList = $('#todoList');
-const itemCount = $('#itemCount');
-const clearCompletedBtn = $('#clearCompleted');
-const filterBtns = $$('.todo__filter');
-const exportBtn = $('#exportBtn');
-const importBtn = $('#importBtn');
-const importFile = $('#importFile');
-
-/** Render the list based on current filter */
-function render() {
-  const tasks = loadTasks();
-  const filtered = filterTasks(tasks, currentFilter);
-
-  const activeCount = tasks.filter((t) => !t.completed).length;
-  const completedCount = tasks.length - activeCount;
-
-  // Update item count
-  itemCount.textContent = `${activeCount} item${activeCount !== 1 ? 's' : ''} left`;
-
-  // Update clear button state
-  clearCompletedBtn.disabled = completedCount === 0;
-
-  // Update filter buttons
-  filterBtns.forEach((btn) => {
-    const filter = btn.dataset.filter;
-    btn.classList.toggle('todo__filter--active', filter === currentFilter);
-  });
-
-  // Render list
-  if (filtered.length === 0) {
-    todoList.innerHTML =
-      `<li class="todo__empty">
-        <div class="todo__empty-icon">📭</div>
-        <p class="todo__empty-text">
-          ${currentFilter === 'all' ? 'No tasks yet. Add one above!' :
-            currentFilter === 'active' ? 'No active tasks. 🎉' : 'No completed tasks.'}
-        </p>
-      </li>`;
-    return;
-  }
-
-  todoList.innerHTML = filtered.map(renderTaskItem).join('');
-}
-
-/** Filter tasks based on filter mode */
-function filterTasks(tasks, filter) {
-  switch (filter) {
-    case 'active':
-      return tasks.filter((t) => !t.completed);
-    case 'completed':
-      return tasks.filter((t) => t.completed);
-    default:
-      return tasks;
-  }
-}
-
-/** Render a single task item HTML */
-function renderTaskItem(task) {
-  const doneClass = task.completed ? 'todo__text--done' : '';
-  const checkedAttr = task.completed ? 'checked' : '';
-  return `
-    <li class="todo__item" data-id="${task.id}">
-      <input type="checkbox" class="todo__checkbox" ${checkedAttr} aria-label="Toggle task">
-      <span class="todo__text ${doneClass}">${escapeHtml(task.text)}</span>
-      <button class="todo__delete-btn" aria-label="Delete task">✕</button>
-    </li>`;
-}
-
-/** Simple HTML escaping */
-function escapeHtml(str) {
-  const el = document.createElement('span');
-  el.textContent = str;
-  return el.innerHTML;
-}
-
-/* ─── Event Handlers ─── */
-
-/** Handle form submit (add task) */
-function handleSubmit(e) {
-  e.preventDefault();
-  const text = todoInput.value.trim();
-  if (!text) return;
-
-  addTask(text);
-  todoInput.value = '';
-  todoInput.focus();
-  render();
-}
-
-/** Handle checkbox toggle */
-function handleToggle(e) {
-  const checkbox = e.target.closest('.todo__checkbox');
-  if (!checkbox) return;
-
-  const li = checkbox.closest('.todo__item');
-  if (!li) return;
-
-  const id = li.dataset.id;
-  toggleTask(id);
-  render();
-}
-
-/** Handle delete button click */
-function handleDelete(e) {
-  const btn = e.target.closest('.todo__delete-btn');
-  if (!btn) return;
-
-  const li = btn.closest('.todo__item');
-  if (!li) return;
-
-  const id = li.dataset.id;
-  deleteTask(id);
-  render();
-}
-
-/** Handle filter button click */
-function handleFilter(e) {
-  const btn = e.target.closest('.todo__filter');
-  if (!btn) return;
-
-  currentFilter = btn.dataset.filter;
-  render();
-}
-
-/** Handle clear completed */
-function handleClearCompleted() {
-  const removed = clearCompleted();
-  if (removed > 0) render();
-}
-
-/** Handle export */
-function handleExport() {
-  const data = exportTasks();
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `todos-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-/** Handle import file selection */
-function handleImportFile(e) {
-  const file = importFile.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      const parsed = JSON.parse(evt.target.result);
-      if (importTasks(parsed)) {
-        render();
-        alert('Tasks imported successfully!');
-      } else {
-        alert('Invalid file format. Please use a valid JSON file exported from this app.');
+    /** Load all todos from localStorage */
+    load() {
+      try {
+        const data = localStorage.getItem(this.KEY);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        console.error('Store.load error:', e);
+        return [];
       }
-    } catch {
-      alert('Could not parse file. Please ensure it is valid JSON.');
-    }
+    },
+
+    /** Save all todos to localStorage */
+    save(todos) {
+      try {
+        localStorage.setItem(this.KEY, JSON.stringify(todos));
+      } catch (e) {
+        console.error('Store.save error:', e);
+      }
+    },
+
+    /** Get all todos */
+    getAll() {
+      return this.load();
+    },
+
+    /** Get a single todo by id */
+    getById(id) {
+      return this.load().find(t => t.id === id) || null;
+    },
+
+    /** Add a new todo; returns updated array */
+    add(title) {
+      const todos = this.load();
+      const task = new Task(title);
+      todos.push(task);
+      this.save(todos);
+      return task;
+    },
+
+    /** Update a todo by id (partial update) */
+    update(id, changes) {
+      const todos = this.load();
+      const index = todos.findIndex(t => t.id === id);
+      if (index === -1) return null;
+      todos[index] = { ...todos[index], ...changes };
+      this.save(todos);
+      return todos[index];
+    },
+
+    /** Delete a todo by id */
+    delete(id) {
+      let todos = this.load();
+      todos = todos.filter(t => t.id !== id);
+      this.save(todos);
+      return todos;
+    },
+
+    /** Toggle completed state */
+    toggle(id) {
+      const todo = this.getById(id);
+      if (!todo) return null;
+      return this.update(id, { completed: !todo.completed });
+    },
+
+    /** Clear all completed todos */
+    clearCompleted() {
+      let todos = this.load();
+      todos = todos.filter(t => !t.completed);
+      this.save(todos);
+      return todos;
+    },
+
+    /** Export todos as JSON string */
+    export() {
+      return JSON.stringify(this.load(), null, 2);
+    },
+
+    /** Import todos from JSON string (appends) */
+    import(jsonStr) {
+      try {
+        const imported = JSON.parse(jsonStr);
+        if (!Array.isArray(imported)) throw new Error('Invalid format');
+        const existing = this.load();
+        const merged = [...existing, ...imported];
+        this.save(merged);
+        return merged;
+      } catch (e) {
+        console.error('Store.import error:', e);
+        return null;
+      }
+    },
   };
-  reader.readAsText(file);
-  importFile.value = '';
-}
 
-/** Handle import button click */
-function handleImportClick() {
-  importFile.click();
-}
+  // =========================================
+  // Controller Layer — UI & Event Handling
+  // =========================================
 
-/* ─── Keyboard Shortcut ─── */
+  class TodoApp {
+    constructor() {
+      // State
+      this.currentFilter = 'all';
+      this.editingId = null;
 
-document.addEventListener('keydown', (e) => {
-  // Ctrl+E or Cmd+E → focus input
-  if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-    e.preventDefault();
-    todoInput.focus();
+      // DOM references
+      this.$form = document.getElementById('addForm');
+      this.$input = document.getElementById('todoInput');
+      this.$list = document.getElementById('todoList');
+      this.$emptyState = document.getElementById('emptyState');
+      this.$itemCount = document.getElementById('itemCount');
+      this.$clearCompleted = document.getElementById('clearCompleted');
+      this.$filters = document.querySelectorAll('.toolbar__filter');
+
+      // Init
+      this.bindEvents();
+      this.render();
+    }
+
+    // -----------------------------------------
+    // Render
+    // -----------------------------------------
+
+    /** Get filtered todos based on current filter */
+    getFilteredTodos() {
+      const all = Store.getAll();
+      switch (this.currentFilter) {
+        case 'active':
+          return all.filter(t => !t.completed);
+        case 'completed':
+          return all.filter(t => t.completed);
+        default:
+          return all;
+      }
+    }
+
+    /** Render the todo list and empty state */
+    render() {
+      const todos = this.getFilteredTodos();
+      const allTodos = Store.getAll();
+
+      // Clear list
+      this.$list.innerHTML = '';
+
+      // Show/hide empty state
+      if (todos.length === 0) {
+        this.$emptyState.hidden = false;
+        this.$list.hidden = true;
+      } else {
+        this.$emptyState.hidden = true;
+        this.$list.hidden = false;
+
+        // Render each item
+        todos.forEach(todo => {
+          const el = this.createTodoElement(todo);
+          this.$list.appendChild(el);
+        });
+      }
+
+      // Update count
+      const activeCount = allTodos.filter(t => !t.completed).length;
+      this.$itemCount.textContent = `${activeCount} 项待办`;
+
+      // Update filter button styles
+      this.$filters.forEach(btn => {
+        const filter = btn.dataset.filter;
+        btn.classList.toggle('btn--filter--active', filter === this.currentFilter);
+      });
+    }
+
+    /** Create a single todo DOM element */
+    createTodoElement(todo) {
+      const isEditing = this.editingId === todo.id;
+      const item = document.createElement('div');
+      item.className = `todo-item${todo.completed ? ' todo-item--completed' : ''}${isEditing ? ' todo-item--editing' : ''}`;
+      item.dataset.id = todo.id;
+
+      if (isEditing) {
+        // Editing mode
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'todo-item__edit-input';
+        input.value = todo.title;
+        input.maxLength = 200;
+        input.autofocus = true;
+
+        // Save on Enter, cancel on Escape
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            this.saveEdit(todo.id, input.value);
+          } else if (e.key === 'Escape') {
+            this.cancelEdit();
+          }
+        });
+
+        // Save on blur (with small delay to allow click on other elements)
+        input.addEventListener('blur', () => {
+          setTimeout(() => {
+            if (this.editingId === todo.id) {
+              this.saveEdit(todo.id, input.value);
+            }
+          }, 100);
+        });
+
+        item.appendChild(input);
+
+        // Focus the input after render
+        requestAnimationFrame(() => {
+          input.focus();
+          input.select();
+        });
+      } else {
+        // Normal display mode
+
+        // Checkbox
+        const checkboxWrap = document.createElement('label');
+        checkboxWrap.className = 'todo-item__checkbox';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.completed;
+        checkboxWrap.appendChild(checkbox);
+        const checkmark = document.createElement('span');
+        checkmark.className = 'checkmark';
+        checkboxWrap.appendChild(checkmark);
+
+        checkbox.addEventListener('change', () => {
+          Store.toggle(todo.id);
+          this.render();
+        });
+
+        item.appendChild(checkboxWrap);
+
+        // Text
+        const textSpan = document.createElement('span');
+        textSpan.className = 'todo-item__text';
+        textSpan.textContent = todo.title;
+        // Double-click to edit
+        textSpan.addEventListener('dblclick', () => {
+          this.startEdit(todo.id);
+        });
+        item.appendChild(textSpan);
+
+        // Actions
+        const actions = document.createElement('div');
+        actions.className = 'todo-item__actions';
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn--icon btn--icon--edit';
+        editBtn.title = '编辑';
+        editBtn.textContent = '✏️';
+        editBtn.addEventListener('click', () => {
+          this.startEdit(todo.id);
+        });
+        actions.appendChild(editBtn);
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn--icon';
+        delBtn.title = '删除';
+        delBtn.textContent = '🗑️';
+        delBtn.addEventListener('click', () => {
+          Store.delete(todo.id);
+          if (this.editingId === todo.id) this.editingId = null;
+          this.render();
+        });
+        actions.appendChild(delBtn);
+
+        item.appendChild(actions);
+      }
+
+      return item;
+    }
+
+    // -----------------------------------------
+    // Event Binding
+    // -----------------------------------------
+
+    bindEvents() {
+      // Add todo form submit
+      this.$form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.addTodo();
+      });
+
+      // Filter buttons
+      this.$filters.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.currentFilter = btn.dataset.filter;
+          this.editingId = null;
+          this.render();
+        });
+      });
+
+      // Clear completed
+      this.$clearCompleted.addEventListener('click', () => {
+        Store.clearCompleted();
+        this.editingId = null;
+        this.render();
+      });
+
+      // Keyboard shortcut: Ctrl+Z to clear input focus
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.activeElement === this.$input) {
+          this.$input.blur();
+        }
+      });
+    }
+
+    // -----------------------------------------
+    // Actions
+    // -----------------------------------------
+
+    /** Add a new todo */
+    addTodo() {
+      const title = this.$input.value.trim();
+      if (!title) {
+        this.$input.focus();
+        return;
+      }
+      Store.add(title);
+      this.$input.value = '';
+      this.$input.focus();
+      this.currentFilter = 'all';
+      this.editingId = null;
+      this.render();
+    }
+
+    /** Start editing a todo */
+    startEdit(id) {
+      this.editingId = id;
+      this.render();
+    }
+
+    /** Save the edited todo */
+    saveEdit(id, newTitle) {
+      const trimmed = newTitle.trim();
+      if (trimmed) {
+        Store.update(id, { title: trimmed });
+      } else {
+        // If empty, delete the todo
+        Store.delete(id);
+      }
+      this.editingId = null;
+      this.render();
+    }
+
+    /** Cancel editing */
+    cancelEdit() {
+      this.editingId = null;
+      this.render();
+    }
   }
-  // Escape → blur input
-  if (e.key === 'Escape') {
-    todoInput.blur();
-  }
-});
 
-/* ─── Initialize ─── */
+  // =========================================
+  // Boot
+  // =========================================
 
-function init() {
-  // Bind events
-  todoForm.addEventListener('submit', handleSubmit);
-
-  // Delegation for dynamic list items
-  todoList.addEventListener('click', (e) => {
-    handleToggle(e);
-    handleDelete(e);
+  document.addEventListener('DOMContentLoaded', () => {
+    window.todoApp = new TodoApp();
   });
 
-  // Filter clicks (delegated from toolbar)
-  document.querySelector('#toolbar').addEventListener('click', (e) => {
-    handleFilter(e);
-  });
-
-  clearCompletedBtn.addEventListener('click', handleClearCompleted);
-  exportBtn.addEventListener('click', handleExport);
-  importBtn.addEventListener('click', handleImportClick);
-  importFile.addEventListener('change', handleImportFile);
-
-  // Initial render
-  render();
-}
-
-document.addEventListener('DOMContentLoaded', init);
+})();
