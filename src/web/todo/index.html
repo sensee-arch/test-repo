@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>todos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <section id="todo-app">
+    <h1>todos</h1>
+    <input id="new-todo" placeholder="What needs to be done?" autofocus>
+    <ul id="todo-list"></ul>
+    <footer id="footer">
+      <span id="todo-count"><strong>0</strong> items left</span>
+      <nav id="filters">
+        <a id="filter-all" class="selected" href="#">All</a>
+        <a id="filter-active" href="#">Active</a>
+        <a id="filter-completed" href="#">Completed</a>
+      </nav>
+      <button id="clear-completed">Clear completed</button>
+    </footer>
+  </section>
+  <script src="app.js"></script>
+</body>
+</html>
