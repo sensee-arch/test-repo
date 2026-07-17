@@ -242,3 +242,108 @@ const State = (function () {
     get onRender() { return onRender; },
   };
 })();
+
+/* ============================================================
+   Module 3: Render Layer
+   IIFE that registers with State and updates the DOM.
+   ============================================================ */
+const Render = (function () {
+  'use strict';
+
+  /** Cache DOM references for performance. */
+  var todoListEl = document.getElementById('todo-list');
+  var todoCountEl = document.getElementById('todo-count');
+  var footerEl = document.getElementById('footer');
+  var clearCompletedEl = document.getElementById('clear-completed');
+  var filterAllEl = document.getElementById('filter-all');
+  var filterActiveEl = document.getElementById('filter-active');
+  var filterCompletedEl = document.getElementById('filter-completed');
+
+  /**
+   * Render the entire UI from current State.
+   */
+  function render() {
+    var filteredTodos = State.getFilteredTodos();
+    var allTodos = State.getTodos();
+    var currentFilter = State.getFilter();
+    var editingId = State.getEditing();
+
+    // --- Render list ---
+    todoListEl.innerHTML = '';
+
+    for (var i = 0; i < filteredTodos.length; i++) {
+      var todo = filteredTodos[i];
+      var li = document.createElement('li');
+
+      if (todo.completed) {
+        li.classList.add('completed');
+      }
+      if (editingId === todo.id) {
+        li.classList.add('editing');
+      }
+
+      // Checkbox
+      var cb = document.createElement('input');
+      cb.className = 'toggle';
+      cb.type = 'checkbox';
+      if (todo.completed) {
+        cb.checked = true;
+      }
+      li.appendChild(cb);
+
+      // Label
+      var label = document.createElement('label');
+      label.textContent = todo.title;
+      li.appendChild(label);
+
+      // Delete button
+      var btn = document.createElement('button');
+      btn.className = 'destroy';
+      li.appendChild(btn);
+
+      // Edit input (hidden until .editing class applied)
+      var editInput = document.createElement('input');
+      editInput.className = 'edit';
+      editInput.value = todo.title;
+      li.appendChild(editInput);
+
+      todoListEl.appendChild(li);
+    }
+
+    // --- Count ---
+    var activeCount = 0;
+    for (var j = 0; j < allTodos.length; j++) {
+      if (!allTodos[j].completed) {
+        activeCount++;
+      }
+    }
+    todoCountEl.innerHTML = '<strong>' + activeCount + '</strong> ' + (activeCount === 1 ? 'item left' : 'items left');
+
+    // --- Filter highlight ---
+    filterAllEl.className = currentFilter === 'all' ? 'selected' : '';
+    filterActiveEl.className = currentFilter === 'active' ? 'selected' : '';
+    filterCompletedEl.className = currentFilter === 'completed' ? 'selected' : '';
+
+    // --- Footer visibility ---
+    if (allTodos.length > 0) {
+      footerEl.classList.remove('hidden');
+    } else {
+      footerEl.classList.add('hidden');
+    }
+
+    // --- Clear completed visibility ---
+    var completedCount = allTodos.length - activeCount;
+    if (completedCount > 0) {
+      clearCompletedEl.classList.remove('hidden');
+    } else {
+      clearCompletedEl.classList.add('hidden');
+    }
+  }
+
+  // Register render callback with State
+  State.onRender = render;
+
+  return {
+    render: render,
+  };
+})();
