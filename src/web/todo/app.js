@@ -347,3 +347,261 @@ const Render = (function () {
     render: render,
   };
 })();
+
+/* ============================================================
+   Module 4: Event Layer
+   IIFE that binds all DOM event listeners.
+   ============================================================ */
+const Events = (function () {
+  'use strict';
+
+  var newTodoInput = document.getElementById('new-todo');
+  var todoListEl = document.getElementById('todo-list');
+  var filterAllEl = document.getElementById('filter-all');
+  var filterActiveEl = document.getElementById('filter-active');
+  var filterCompletedEl = document.getElementById('filter-completed');
+  var clearCompletedEl = document.getElementById('clear-completed');
+
+  /**
+   * Get the todo ID from a child element's parent <li>.
+   * Walks up to find the <li>, then maps by index to filtered todos.
+   * @param {Element} el
+   * @returns {string|null}
+   */
+  function getIdFromChild(el) {
+    while (el && el.tagName !== 'LI') {
+      el = el.parentNode;
+    }
+    if (el && el.parentNode === todoListEl) {
+      var children = todoListEl.children;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i] === el) {
+          var filtered = State.getFilteredTodos();
+          if (filtered[i]) {
+            return filtered[i].id;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Handle new todo input.
+   */
+  function onNewTodoKeydown(e) {
+    if (e.key === 'Enter') {
+      var val = newTodoInput.value;
+      State.addTodo(val);
+      newTodoInput.value = '';
+    }
+  }
+
+  /**
+   * Handle clicks on the todo list (event delegation).
+   */
+  function onTodoListClick(e) {
+    var target = e.target;
+
+    // Toggle checkbox
+    if (target.classList.contains('toggle')) {
+      var id = getIdFromChild(target);
+      if (id) {
+        State.toggleTodo(id);
+      }
+      return;
+    }
+
+    // Delete button
+    if (target.classList.contains('destroy')) {
+      var id = getIdFromChild(target);
+      if (id) {
+        State.deleteTodo(id);
+      }
+      return;
+    }
+  }
+
+  /** @type {Element|null} Track the currently focused edit input. */
+  var currentEditInput = null;
+
+  /** @type {function} Bound edit keydown handler reference. */
+  var boundEditKeydown = null;
+
+  /** @type {function} Bound edit blur handler reference. */
+  var boundEditBlur = null;
+
+  /**
+   * Save the current edit and exit mode.
+   * @param {string} id
+   */
+  function saveCurrentEdit(id) {
+    if (currentEditInput) {
+      State.updateTodo(id, currentEditInput.value);
+    }
+    exitEditMode();
+  }
+
+  /**
+   * Cancel the current edit mode and restore.
+   */
+  function cancelEditMode() {
+    State.setEditing(null);
+    Render.render();
+    currentEditInput = null;
+    boundEditKeydown = null;
+    boundEditBlur = null;
+  }
+
+  /**
+   * Exit edit mode, save, and clean up listeners.
+   */
+  function exitEditMode() {
+    if (currentEditInput && boundEditKeydown && boundEditBlur) {
+      currentEditInput.removeEventListener('keydown', boundEditKeydown);
+      currentEditInput.removeEventListener('blur', boundEditBlur);
+    }
+    State.setEditing(null);
+    Render.render();
+    currentEditInput = null;
+    boundEditKeydown = null;
+    boundEditBlur = null;
+  }
+
+  /**
+   * Handle double-click on label to enter edit mode.
+   */
+  function onTodoListDblclick(e) {
+    var target = e.target;
+
+    if (target.tagName !== 'LABEL') {
+      return;
+    }
+
+    var id = getIdFromChild(target);
+    if (!id) {
+      return;
+    }
+
+    // Set editing ID
+    State.setEditing(id);
+
+    // Re-render to show editing state
+    Render.render();
+
+    // Find the edit input index by matching id in filtered list
+    var filtered = State.getFilteredTodos();
+    var idx = -1;
+    for (var i = 0; i < filtered.length; i++) {
+      if (filtered[i].id === id) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx === -1) {
+      return;
+    }
+
+    var li = todoListEl.children[idx];
+    if (!li) {
+      return;
+    }
+
+    var editInput = li.querySelector('.edit');
+    if (!editInput) {
+      return;
+    }
+
+    currentEditInput = editInput;
+    editInput.focus();
+    editInput.select();
+
+    /**
+     * Handle keydown on edit input.
+     */
+    function onEditKeydown(ev) {
+      if (ev.key === 'Enter') {
+        saveCurrentEdit(id);
+      } else if (ev.key === 'Escape') {
+        cancelEditMode();
+      }
+    }
+
+    /**
+     * Handle blur on edit input.
+     */
+    function onEditBlur() {
+      saveCurrentEdit(id);
+    }
+
+    boundEditKeydown = onEditKeydown;
+    boundEditBlur = onEditBlur;
+
+    editInput.addEventListener('keydown', onEditKeydown);
+    editInput.addEventListener('blur', onEditBlur);
+  }
+
+  /**
+   * Handle filter link clicks.
+   */
+  function onFilterClick(e) {
+    var target = e.target;
+    if (target.id === 'filter-all') {
+      State.setFilter('all');
+    } else if (target.id === 'filter-active') {
+      State.setFilter('active');
+    } else if (target.id === 'filter-completed') {
+      State.setFilter('completed');
+    }
+    e.preventDefault();
+  }
+
+  /**
+   * Handle clear completed click.
+   */
+  function onClearClick() {
+    State.clearCompleted();
+  }
+
+  /**
+   * Bind all event listeners.
+   */
+  function bindEvents() {
+    // New todo input
+    newTodoInput.addEventListener('keydown', onNewTodoKeydown);
+
+    // Todo list event delegation
+    todoListEl.addEventListener('click', onTodoListClick);
+    todoListEl.addEventListener('dblclick', onTodoListDblclick);
+
+    // Filter links
+    filterAllEl.addEventListener('click', onFilterClick);
+    filterActiveEl.addEventListener('click', onFilterClick);
+    filterCompletedEl.addEventListener('click', onFilterClick);
+
+    // Clear completed
+    clearCompletedEl.addEventListener('click', onClearClick);
+  }
+
+  return {
+    bindEvents: bindEvents,
+  };
+})();
+
+/* ============================================================
+   Module 5: Integration (Bootstrap)
+   Initializes all modules in order.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  // Step 1: Initialize State from Storage
+  State.init();
+
+  // Step 2: Render is auto-registered via State.onRender = render (inside Render IIFE)
+  // Step 3: Bind events
+  Events.bindEvents();
+
+  // Step 4: Initial render
+  Render.render();
+})();
