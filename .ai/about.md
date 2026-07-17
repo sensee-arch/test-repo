@@ -1,73 +1,108 @@
-# .ai/about.md — AI Agent Project Constitution
+# Project Constitution
 
-## 项目概述
+> Version: v1.0 | Date: 2026-07-17 | Project: sensee-arch/test-repo
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+---
 
-## 核心目标
+## 1. Project Overview
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- **Name**: test-repo
+- **Description**: A test repository for Todo List Web App development
+- **Language**: HTML5 / CSS3 / Vanilla JavaScript ES6+
+- **Stack**: Zero external dependencies, 100% offline
+- **Storage**: Browser localStorage (`todo_items` key)
+- **Source Path**: `src/web/todo/`
 
-## 技术架构
+## 2. Core Objectives
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- Build a pure front-end Todo List application with CRUD operations
+- Implement status toggle (complete/incomplete) per item
+- Provide filter views: All / Active / Completed
+- Support inline editing with Enter-save and Escape-cancel
+- Persist data via localStorage across sessions
+- Follow spec-first, contract-first development methodology
 
-## 基础契约
+## 3. Technical Architecture
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+### 4-Layer Unidirectional Data Flow
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
+```
+Event → State Mutation → onChange() → Render → DOM Update
+```
+
+| Layer | Location | Responsibility |
+|-------|----------|---------------|
+| Storage | `app.js` (lines 1-30) | `loadTodos()`, `saveTodos()` — localStorage wrapper |
+| State | `app.js` (lines 31-120) | Central state: todos array, filter, CRUD methods, onChange trigger |
+| Render | `app.js` (lines 121-200) | `render()` — full DOM rebuild from filtered state |
+| Event | `app.js` (lines 201-280) | DOM event listeners wired to State methods |
+
+### Data Model
+
+```typescript
+interface TodoItem {
+  id: string;        // 8-12 chars, random
+  title: string;     // 1-200 chars, trimmed
+  completed: boolean; // default false
+  createdAt: number;  // Date.now() ms
 }
 ```
 
-## Agent 划分
+## 4. Base Contract
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### File Structure
+- `src/web/todo/index.html` — Semantic HTML skeleton with DOM IDs
+- `src/web/todo/style.css` — All visual styles (Flexbox, custom properties, responsive)
+- `src/web/todo/app.js` — All JavaScript (Storage + State + Render + Event)
 
-## 运行与依赖
+### DOM ID Contract
+| ID | Element | Purpose |
+|----|---------|---------|
+| `new-todo` | input | Add todo input field |
+| `todo-list` | ul | Todo items container |
+| `footer` | footer | Bottom controls area |
+| `todo-count` | span | Active item count |
+| `filter-all` | a/button | All filter |
+| `filter-active` | a/button | Active filter |
+| `filter-completed` | a/button | Completed filter |
+| `clear-completed` | button | Clear completed button |
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### CSS Class Contract
+| Class | Applied To | Visual Effect |
+|-------|-----------|---------------|
+| `.completed` | li | text-decoration: line-through; opacity: 0.6 |
+| `.editing` | li | Shows edit input, hides label |
+| `.selected` | Filter button | Highlighted/active appearance |
+| `.hidden` | Footer elements | display: none |
 
-## 协作规则
+## 5. Agent Division
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+| Role | Responsibility | Current |
+|------|---------------|---------|
+| Host | Coordination, broadcasting | Javis |
+| Manager | Spec, Plan, Contract | Javis |
+| Developer | Implementation | TBD |
+| Reviewer | Code review, AC verification | TBD |
 
-## 演进原则
+## 6. Running & Dependencies
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- **No build tools, no transpilers, no npm packages**
+- Open `src/web/todo/index.html` directly in browser
+- Compatible with Chrome/Firefox/Edge ≥ 90
+- No CDN links, no external scripts, no fonts
+
+## 7. Collaboration Rules
+
+- **Branch naming**: `flyinghub-YYYYMMDDHHmmss`
+- **Commit format**: `[TASK-X] module: short description`
+- All work on feature branch, no direct commits to main
+- Contract must be approved before coding begins
+- Review required before merge
+
+## 8. Evolution Principles
+
+- Spec-first: any feature addition requires spec update first
+- Contract-first: cross-layer interfaces must be contracted before implementation
+- TASK-1 (HTML) must precede TASK-2 (CSS) and TASK-3 (Storage)
+- TASK-2 and TASK-3 can parallel after TASK-1
+- No scope creep: feature additions beyond spec require full spec + plan update
