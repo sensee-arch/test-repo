@@ -1,73 +1,119 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+## 1. Project Overview
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **Project Name**: test-repo
+- **Repository**: https://github.com/sensee-arch/test-repo
+- **Description**: An experimental/test project providing a flexible playground for AI Agent collaborative programming. Multiple AI Agents collaborate under unified architecture specifications and standardized workflows.
+- **Tech Stack**: Python 3.11+ (recommended), Git-based collaboration
+- **Project Status**: Infrastructure scaffolding complete, ready for feature development
+- **Key Files**: `ARCH.md` (architecture document), `.ai/about.md` (this constitution), `LICENSE` (MIT), `requirements.txt` / `requirements-dev.txt`
 
-## 核心目标
+## 2. Core Objectives
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ✅ **Verify AI Agent collaboration workflows**: Practice end-to-end collaboration (requirements → plan → task → development → review)
+- ✅ **Establish standardized processes**: Build repeatable templates for AI-assisted development
+- ✅ **Template accumulation**: Create reusable specifications, technical plans, and task decomposition templates
+- ✅ **Technical validation**: Rapid prototyping and feasibility validation across opt-in tech stacks
+- ❌ Not intended for production deployment
+- ❌ Not intended for multi-environment CI/CD pipelines
 
-## 技术架构
+## 3. Technical Architecture
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **Architecture Style**: Modular monorepo with clear separation of concerns
+- **Recommended Stack**:
+  - Language: Python 3.11+ (primary), Go / TypeScript (optional)
+  - Web Framework: FastAPI (recommended), Flask / Express as alternatives
+  - Database: SQLite (dev) / PostgreSQL (prod)
+  - API Style: RESTful (primary), GraphQL (optional)
+  - Testing: pytest (Python), vitest (TypeScript)
+  - Linting: Ruff (Python), Prettier (frontend)
+  - CI/CD: GitHub Actions
+  - Package Management: pip + requirements.txt / Poetry (Python)
+- **Directory Structure**:
+  ```
+  test-repo/
+  ├── .agent/              # AI Agent work files
+  ├── .ai/                 # AI project constitution
+  ├── src/
+  │   ├── core/           # Core business logic
+  │   ├── api/            # API interface layer
+  │   ├── models/         # Data models
+  │   ├── services/       # Service layer
+  │   └── utils/          # Utility functions
+  ├── tests/
+  │   ├── unit/           # Unit tests
+  │   └── integration/    # Integration tests
+  ├── docs/               # Documentation
+  ├── scripts/            # Helper scripts
+  ├── requirements.txt    # Production dependencies
+  ├── requirements-dev.txt# Dev dependencies
+  ├── ARCH.md             # Architecture document
+  └── README.md           # Project README
+  ```
 
-## 基础契约
+## 4. Base Contract
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+- **Communication**: JSON-based structured messages between Agents via group chat
+- **Data Format**: All task inputs/outputs are JSON documents with `status`, `content`, `action_trace` fields
+- **Git Workflow**:
+  - Branch format: `flyinghub-YYYYMMDDHHmmss`
+  - Commit format: `<type>: <description>` where type ∈ {feat, fix, docs, refactor, test, chore, style}
+  - PRs require at minimum one Agent reviewer
+- **Contract-First**: Spec → Plan → Contract → Code sequence is mandatory for all features
+- **Error Protocol**: Auto-fix within scope; escalate only for auth, permissions, resource, or hard constraint failures (max 3 retries before escalation)
+- **Prohibited Actions**: No empty commits, no force push to main, no `innerHTML` for user content, no `eval()`
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
-```
+## 5. Agent Division
 
-## Agent 划分
+| Name | Role | Input Source | Output Destination |
+|------|------|-------------|-------------------|
+| **Host** | Group coordinator, sends welcome/status broadcasts | User events | Group chat |
+| **Manager** | Requirements analysis, solution design, contract authoring | User needs + Spec | Plan documents + Contract |
+| **Developer** | Code implementation, commits, push | Task description + Contract | Code commits |
+| **Reviewer** | Code review, AC validation, quality gate | Code files | Review report |
+| **Boot Agent** | Environment setup, project initialization | Repository config | Ready workspace |
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+## 6. Running & Dependencies
 
-## 运行与依赖
+- **Runtime Requirements**:
+  - Git ≥ 2.30
+  - Python ≥ 3.11 (for Python-based tasks)
+  - Modern browser (for web-based features)
+- **Setup**:
+  ```bash
+  git clone https://github.com/sensee-arch/test-repo.git
+  cd test-repo
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  pip install -r requirements-dev.txt
+  ```
+- **Development Tools**: VS Code / Cursor, Git CLI, curl / HTTPie for API testing
+- **Current Dependencies**: None runtime dependencies beyond Python stdlib (requirements files are placeholders for future use)
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+## 7. Collaboration Rules
 
-## 协作规则
+- **Logging**: All Agent actions must record `action_trace` (Base64-encoded Markdown with Reasoning → Decision → Action → Observation → Reflection)
+- **Context Isolation**: Each Hub operates independently on its own branches and documents. No shared state across Hubs.
+- **Git Discipline**:
+  - Always `git pull` before `git push`
+  - Merge conflicts: resolve by `git add` + `git commit`, continue
+  - Detached HEAD: recover to main branch immediately
+- **Branch Lifecycle**:
+  1. Create from `main` with `flyinghub-YYYYMMDDHHmmss` naming
+  2. Push upstream immediately after creation
+  3. Develop, commit, push iteratively
+  4. Merge back to `main` via PR when complete
+- **Output Format**: All Agent responses must be valid JSON with `content` (group chat message), `status`, and relevant data fields
+- **Privacy**: No personal data collection, no filesystem traversal outside workspace, mask tokens/secrets in logs
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+## 8. Evolution Principles
 
-## 演进原则
-
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- **Contract-First**: Every feature begins with a written Spec, followed by a Plan, then a Contract, before any code is written
+- **Modular Growth**: New capabilities are introduced as new modules, preserving existing module boundaries
+- **Simplicity Priority**: Default to the simplest solution that meets requirements — no over-engineering
+- **Replaceability**: Components decouple through interfaces, enabling drop-in replacements
+- **Test-Driven**: Core logic must be testable with unit tests
+- **ADR**: Architecture Decision Records stored in `docs/adr/` when significant architectural choices are made
+- **Continuous Documentation**: `.ai/about.md` is updated whenever project scope, architecture, or collaboration rules change
