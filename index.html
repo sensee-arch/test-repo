@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Todo List 单页应用 — 简洁的任务管理工具">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header__container">
+      <h1 class="header__title">📋 Todo List</h1>
+      <p class="header__subtitle">Keep track of your tasks</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="todo">
+      <form class="todo__form" id="todoForm">
+        <div class="todo__input-group">
+          <input
+            type="text"
+            class="todo__input"
+            id="todoInput"
+            placeholder="What needs to be done?"
+            autocomplete="off"
+            required
+          >
+          <button type="submit" class="todo__add-btn" id="addBtn">＋ Add</button>
+        </div>
+      </form>
+
+      <div class="todo__toolbar" id="toolbar">
+        <span class="todo__count" id="itemCount">0 items left</span>
+        <div class="todo__filters">
+          <button class="todo__filter todo__filter--active" data-filter="all">All</button>
+          <button class="todo__filter" data-filter="active">Active</button>
+          <button class="todo__filter" data-filter="completed">Completed</button>
+        </div>
+        <button class="todo__clear-btn" id="clearCompleted">Clear completed</button>
+      </div>
+
+      <ul class="todo__list" id="todoList">
+        <!-- Tasks rendered by JS -->
+      </ul>
+
+      <div class="todo__tips">
+        <p>💡 Press <kbd>Enter</kbd> to add · Click checkbox to toggle · Click ✕ to delete</p>
+      </div>
+    </section>
+
+    <section class="actions">
+      <h2 class="actions__title">Manage</h2>
+      <div class="actions__group">
+        <button class="actions__btn" id="exportBtn">📥 Export JSON</button>
+        <button class="actions__btn" id="importBtn">📤 Import JSON</button>
+        <input type="file" id="importFile" accept=".json" hidden>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">Todo List App · Built with HTML5 + CSS3 + Vanilla JS</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
