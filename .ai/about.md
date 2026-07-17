@@ -70,4 +70,5 @@
 
 - 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
 - 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- ADR 位置：`docs/adr/`
+- 项目配置文件：`requirements.txt`（Python 环境）、`ARCH.md`（架构文档）
