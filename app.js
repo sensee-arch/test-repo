@@ -173,7 +173,12 @@
       input.focus();
       input.select();
 
+      let editFinished = false;
+
       const finishEdit = (save) => {
+        if (editFinished) return;
+        editFinished = true;
+
         if (save) {
           const newTitle = input.value.trim();
           if (newTitle && newTitle !== todo.title) {
