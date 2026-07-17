@@ -2,45 +2,45 @@
 
 ## 项目概述
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- 本项目是一个 **AI Agent 协作编程试验平台**，提供标准化的多 Agent 协作工作流
+- 解决多个 AI Agent 在同一代码仓库中高效协作的流程、规范和技术问题
+- 核心输出包括：协作规范模板、需求规格模板、技术方案模板和可复用的协作模式
+- 本项目不涉及：用户数据存储、外部 API 集成、生产级应用部署、商业化运营
 
 ## 核心目标
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ✅ 建立完整的 AI Agent 协作流程：需求 → 规格 → 方案 → 任务 → 开发 → 审核 → 合并
+- ✅ 沉淀标准化的协作模板（Spec / Plan / Contract / Task）
+- ✅ 验证多 Agent 在 git 分支上的并行工作模式
+- ✅ 记录 AI 辅助开发的实践经验，形成可复用的知识资产
+- ✅ 支持灵活的技术栈选择，便于快速原型验证
+- ❌ 不追求成为生产级框架或商业产品
+- ❌ 不保证与特定 AI 平台（如 OpenClaw / Claude / ChatGPT）的兼容性
 
 ## 技术架构
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **架构风格**：文档驱动（documentation-driven），以 Markdown 文档作为协作契约
+- **工作流组件**：
+  - 群聊层：Hub 消息通道，用于需求提出、状态广播、结果反馈
+  - 协定层：Spec (需求规格) → Plan (技术方案) → Contract (实现契约)
+  - 执行层：Task 分配 → 编码实现 → Review 审核 → Merge 合并
+  - 知识层：ARCH.md（架构文档）、about.md（项目宪法）、ADR（架构决策记录）
+- **推荐技术栈**：Python 3.11+ / FastAPI / SQLite / pytest（可选，根据实际需求选择）
+- **协作工具**：Git + GitHub + Hub（FlyingHub / 群聊通道）
 
 ## 基础契约
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+- 工作流顺序：需求 → /spec → /plan → /coding → /review，不可跳过
+- 分支命名：`flyinghub-YYYYMMDDHHmmss`，每个 Hub 会话独立分支
+- 文档格式：所有协定文档使用 Markdown，UTF-8 编码
+- 日志规范：Agent 执行记录通过 `action_trace`（Base64 编码）保存
+- 禁止行为：禁止跳过契约步骤直接编码；禁止跨 Hub 共享状态；
+  禁止未经验证就假设历史记忆或全局上下文
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### Agent 状态传递
+```
+用户需求 → [Manager] Spec Draft → [Manager] Plan → [Developer] Code → [Reviewer] Report
+                                                  ↑ 每个步骤输出文件 + 群聊通知
 ```
 
 ## Agent 划分
@@ -54,20 +54,25 @@
 
 ## 运行与依赖
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+- 运行环境：Git + GitHub（远程仓库），本地开发机
+- 依赖清单：`requirements.txt`（生产依赖）、`requirements-dev.txt`（开发依赖）
+- 可选运行时：Python 3.11+（若选择 Python 技术栈）
+- 无需：Docker、数据库服务、云服务器、域名
+- 许可证：MIT（见 LICENSE 文件）
 
 ## 协作规则
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+- **契约优先**：编码前必须先完成 Spec → Plan → Contract 文档
+- **分支隔离**：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
+- **日志规范**：通过 `action_trace`（Base64 编码 Markdown）记录操作步骤和错误
+- **提交规范**：使用 `<type>: <description>` 格式（feat/fix/docs/refactor/test/chore）
+- **自修复优先**：出现错误先尝试自动修复（重试、创建路径、检测依赖），失败后再上报
+- **禁止**：未经验证就假设全局状态或历史记忆；跳过文档直接编码
 
 ## 演进原则
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- **契约优先于实现**：任何新功能必须先完成 Spec 和 Contract 再编码
+- **增量演进**：新能力优先通过新增模块实现，不破坏现有模块边界
+- **文档同步**：ARCH.md 和 about.md 随项目演进同步更新
+- **实践驱动**：规范从实践中沉淀，不做过度设计
+- **ADR 记录**：重要架构决策记录在 `docs/adr/` 目录下
