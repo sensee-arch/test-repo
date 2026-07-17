@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Todo List 单页应用">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="header__title">📋 Todo List</h1>
+      <p class="header__subtitle">组织你的每一天</p>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Add Todo Form -->
+      <section class="todo-form">
+        <form class="todo-form__form" id="addForm">
+          <input
+            type="text"
+            class="todo-form__input"
+            id="todoInput"
+            placeholder="输入新的待办事项..."
+            maxlength="200"
+            autofocus
+          >
+          <button type="submit" class="todo-form__submit btn btn--primary">
+            添加
+          </button>
+        </form>
+      </section>
+
+      <!-- Toolbar -->
+      <section class="toolbar">
+        <div class="toolbar__filters">
+          <button class="toolbar__filter btn btn--filter btn--filter--active" data-filter="all">全部</button>
+          <button class="toolbar__filter btn btn--filter" data-filter="active">未完成</button>
+          <button class="toolbar__filter btn btn--filter" data-filter="completed">已完成</button>
+        </div>
+        <div class="toolbar__actions">
+          <span class="toolbar__count" id="itemCount">0 项待办</span>
+          <div class="toolbar__io">
+            <button class="toolbar__export btn btn--icon" id="btnExport" title="导出数据">📤</button>
+            <button class="toolbar__import btn btn--icon" id="btnImport" title="导入数据">📥</button>
+          </div>
+          <button class="toolbar__clear btn btn--text" id="clearCompleted">清除已完成</button>
+        </div>
+      </section>
+
+      <!-- Todo List -->
+      <section class="todo-list" id="todoList" aria-label="待办事项列表">
+        <!-- Dynamically rendered -->
+      </section>
+
+      <!-- Empty State -->
+      <section class="empty-state" id="emptyState" hidden>
+        <p class="empty-state__icon">🎯</p>
+        <p class="empty-state__text">还没有待办事项，添加一个吧！</p>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer__text">数据存储在浏览器本地</p>
+    </footer>
+  </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="fileInput" accept=".json,.txt" hidden>
+
+  <script src="app.js"></script>
+</body>
+</html>
