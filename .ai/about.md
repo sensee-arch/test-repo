@@ -1,73 +1,126 @@
-# .ai/about.md — AI Agent Project Constitution
+# About — Project Constitution
 
-## 项目概述
+> Generative AI Agent Collaboration for test_repo
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+## 1. Project Overview
 
-## 核心目标
+- **Project**: test_repo
+- **Repository**: `https://github.com/sensee-arch/test-repo`
+- **Hub**: 测试Hub (automation test hub)
+- **Description**: A collaborative Web-based Todo List application built through multi-agent AI collaboration. Serves as a testing and demonstration ground for AI Agent cooperative development workflows.
+- **Source location**: `src/web/todo/` — contains `index.html`, `style.css`, `app.js`
+- **ADR location**: `docs/adr/`
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+## 2. Core Objectives
 
-## 技术架构
+1. Build a fully functional Todo List Web SPA (Single Page Application)
+2. Validate and refine AI Agent collaborative coding workflows
+3. Establish standardized AI project collaboration process: requirements → planning → contracts → development → review
+4. Document and template reusable patterns for AI-assisted development
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+## 3. Technical Architecture
 
-## 基础契约
+### 4-Layer Architecture (Unidirectional Data Flow)
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
-
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+```
+Storage → State → Render → Event
 ```
 
-## Agent 划分
+| Layer | Responsibility |
+|-------|---------------|
+| Storage | Browser localStorage read/write, JSON serialization, error handling |
+| State | In-memory todos[] and filter, CRUD methods, onChange callback |
+| Render | DOM generation from state, counters, filter highlights, empty state |
+| Event | Event listeners (keyboard + click), delegation, calls State methods |
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Data Flow
 
-## 运行与依赖
+1. User input → DOM event → Event handler
+2. Event handler calls State method (add/delete/update/toggle/setFilter)
+3. State updates in-memory data → calls Storage.saveTodos() for persistence
+4. State calls onChange callback → Render re-renders affected DOM
+5. Result: user sees updated UI consistent with stored data
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### Tech Stack
 
-## 协作规则
+- **Language**: HTML5, CSS3, Vanilla JavaScript ES6+
+- **Storage**: Browser localStorage (key: `todo_items`)
+- **External Dependencies**: None. Zero external dependencies. Works from `file://` protocol.
+- **Frameworks/Build Tools**: None
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+## 4. Base Contract
 
-## 演进原则
+### Branch Naming Convention
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- Feature branches: `flyinghub-YYYYMMDDHHmmss`
+- Worker branches (legacy): `feat/worker-{id}-{description}`
+- Main branch: `main`
+
+### Commit Message Format
+
+- `[Prefix] Description` — e.g., `[Spec] add requirements specification`, `[Coding] implement storage layer`
+
+### Documentation Structure
+
+- `.ai/about.md` — Project constitution (this file)
+- `ARCH.md` — Architecture documentation
+- `docs/adr/` — Architecture Decision Records
+
+### Output Format
+
+All agent responses must be valid JSON with:
+- `content` (string): User-facing message with phase tag prefix
+- `status` (string): `ok|done|failed`
+- `action_trace` (string, base64-encoded): Agent reasoning record
+
+## 5. Agent Division
+
+| Role | Responsibility | Mode |
+|------|--------------|------|
+| **Host** | Welcome, opening announcements, status broadcasts | Free Chat |
+| **Admin** | Requirements, spec generation, planning, contracts | `/spec` |
+| **Developer** | Coding implementation following contracts | `/coding` |
+| **Reviewer** | Code review, acceptance testing, verification | `/coding` (review phase) |
+
+### Collaboration Modes
+
+1. **Free Chat** — Discuss ideas, ask questions, plan freely
+2. **`/spec`** — Create requirements specification and contract
+3. **`/coding`** — Full pipeline: plan → contract → setup → assign → code → review → summary
+
+## 6. Running & Dependencies
+
+### How to Run
+
+1. Open `src/web/todo/index.html` in any modern browser
+2. No server required — works directly from `file://` protocol
+3. No build steps, no package installation
+
+### Dependencies
+
+- None. The app is a pure frontend SPA without external dependencies.
+- Browser requirements: Chrome, Firefox, Edge (modern versions)
+
+### Development Tools
+
+- Standard git workflow
+- GitHub for remote collaboration
+- AI Agents for code generation and review
+
+## 7. Collaboration Rules
+
+1. **Contract-first**: Complete specification → planning → contracts before coding begins
+2. **Minimal dependencies**: Task decomposition minimizes interdependencies; parallel execution where possible
+3. **Task dependency graph**: TASK-1∥TASK-3 → TASK-2∥TASK-4 → TASK-5 → TASK-6 → TASK-7 → TASK-8
+4. **No empty commits**: Do NOT create empty commits; meaningful changes only
+5. **Self-healing**: Attempt auto-fix before reporting failure
+6. **Safety first**: Follow privacy, security, content safety, transparency, and security isolation principles
+7. **Incremental delivery**: Each task must produce a functional increment when possible
+
+## 8. Evolution Principles
+
+1. The project constitution (this file) is a living document — update as the project evolves
+2. Architecture decisions should be recorded in `docs/adr/` for traceability
+3. New requirements first go through `/spec` mode before implementation
+4. Technical debt should be documented and addressed in subsequent iterations
+5. Templates and patterns proven effective should be extracted for reuse in future projects
