@@ -1,0 +1,363 @@
+/* ================================================================
+   Todo List App — styles.css
+   ================================================================ */
+
+/* ---- CSS Custom Properties ---- */
+:root {
+  --primary: #e74c3c;
+  --primary-light: #f1948a;
+  --completed: #5cb85c;
+  --border: #e6e6e6;
+  --bg: #f5f5f5;
+  --card-bg: #fff;
+  --text: #4d4d4d;
+  --text-muted: #999;
+  --text-faded: #d9d9d9;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --radius: 4px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --max-width: 550px;
+  --transition: all 0.2s ease;
+}
+
+/* ---- Reset & Base ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font: 14px/1.4 var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Todo App Container ---- */
+#todo-app {
+  max-width: var(--max-width);
+  margin: 40px auto 0;
+  padding: 0 16px;
+}
+
+/* ---- Header ---- */
+#todo-app h1 {
+  font-size: 80px;
+  font-weight: 200;
+  text-align: center;
+  color: var(--primary-light);
+  margin-bottom: 20px;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ---- New Todo Input ---- */
+#new-todo {
+  width: 100%;
+  padding: 16px 16px 16px 60px;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.4;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  outline: none;
+  transition: var(--transition);
+}
+
+#new-todo:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+}
+
+#new-todo::placeholder {
+  color: var(--text-faded);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ---- Todo List ---- */
+#todo-list {
+  list-style: none;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+#todo-list li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 24px;
+  font-weight: 300;
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+#todo-list li:last-child {
+  border-bottom: none;
+}
+
+#todo-list li:hover {
+  background: #fafafa;
+}
+
+/* ---- Toggle Checkbox ---- */
+#todo-list li .toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  margin-right: 12px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+#todo-list li .toggle:hover {
+  border-color: var(--completed);
+}
+
+#todo-list li .toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  color: var(--completed);
+  display: none;
+}
+
+/* ---- Toggle: checked (completed) ---- */
+#todo-list li .toggle:checked {
+  border-color: var(--completed);
+}
+
+#todo-list li .toggle:checked::after {
+  display: block;
+  content: "✓";
+}
+
+/* ---- Label (todo title) ---- */
+#todo-list li label {
+  flex: 1;
+  word-break: break-word;
+  padding: 6px 0;
+  cursor: default;
+  transition: var(--transition);
+}
+
+/* ---- Completed State ---- */
+#todo-list li.completed label {
+  color: var(--text-faded);
+  text-decoration: line-through;
+}
+
+/* ---- Destroy Button ---- */
+#todo-list li .destroy {
+  display: none;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 34px;
+  text-align: center;
+  color: var(--primary-light);
+  transition: var(--transition);
+  border-radius: 50%;
+}
+
+#todo-list li .destroy::after {
+  content: "×";
+}
+
+#todo-list li .destroy:hover {
+  color: var(--primary);
+  background: rgba(231, 76, 60, 0.08);
+}
+
+#todo-list li:hover .destroy {
+  display: block;
+}
+
+/* ---- Edit Mode ---- */
+#todo-list li .edit {
+  display: none;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 24px;
+  font-weight: 300;
+  border: 1px solid var(--primary-light);
+  border-radius: var(--radius);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+}
+
+#todo-list li.editing .edit {
+  display: block;
+}
+
+#todo-list li.editing label {
+  display: none;
+}
+
+#todo-list li.editing .toggle {
+  display: none;
+}
+
+#todo-list li.editing .destroy {
+  display: none;
+}
+
+/* ---- Footer ---- */
+#footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ---- Todo Count ---- */
+#todo-count {
+  font-size: 13px;
+}
+
+#todo-count strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ---- Filters ---- */
+#filters {
+  display: flex;
+  gap: 4px;
+}
+
+#filters a {
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+#filters a:hover {
+  border-color: var(--primary-light);
+}
+
+#filters a.selected {
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ---- Clear Completed Button ---- */
+#clear-completed {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 3px;
+  transition: var(--transition);
+}
+
+#clear-completed:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* ---- Responsive ---- */
+
+/* Small screens (< 480px) */
+@media (max-width: 479px) {
+  #todo-app {
+    margin-top: 16px;
+    padding: 0 8px;
+  }
+
+  #todo-app h1 {
+    font-size: 48px;
+  }
+
+  #new-todo {
+    font-size: 18px;
+    padding: 12px 12px 12px 48px;
+  }
+
+  #todo-list li {
+    font-size: 18px;
+    padding: 10px 12px;
+  }
+
+  #footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+  }
+
+  #filters {
+    order: -1;
+  }
+}
+
+/* Medium screens (480px – 768px) */
+@media (min-width: 480px) and (max-width: 768px) {
+  #todo-app {
+    margin-top: 24px;
+    padding: 0 12px;
+  }
+
+  #todo-app h1 {
+    font-size: 64px;
+  }
+
+  #new-todo {
+    font-size: 20px;
+  }
+
+  #todo-list li {
+    font-size: 20px;
+  }
+
+  #footer {
+    padding: 8px 12px;
+  }
+}
+
+/* Large screens (> 768px) — desktop */
+@media (min-width: 769px) {
+  #todo-app {
+    margin-top: 60px;
+  }
+
+  #todo-list li {
+    font-size: 24px;
+  }
+}
