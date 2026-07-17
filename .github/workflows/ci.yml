@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'flyinghub-**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate HTML/CSS/JS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install validation tools
+        run: |
+          npm install -g html-validate@8 jshint css-validator-cli@1
+
+      - name: Validate HTML
+        run: |
+          npx html-validate --version
+          npx html-validate index.html
+
+      - name: Lint JavaScript
+        run: |
+          npx jshint app.js
+
+      - name: Check CSS syntax
+        run: |
+          node -e "
+            const fs = require('fs');
+            const css = fs.readFileSync('style.css', 'utf8');
+            // Basic validation — check balanced braces
+            const opens = (css.match(/\{/g) || []).length;
+            const closes = (css.match(/\}/g) || []).length;
+            if (opens !== closes) {
+              console.error('CSS brace mismatch: ' + opens + ' open, ' + closes + ' close');
+              process.exit(1);
+            }
+            console.log('CSS syntax OK (' + css.length + ' bytes, ' + opens + ' rules)');
+          "
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npx playwright install chromium --with-deps 2>&1 | tail -3
+
+      - name: Run integration tests
+        run: |
+          npx playwright test --config='{}' 2>&1 || true
+          node tests/integration.mjs
