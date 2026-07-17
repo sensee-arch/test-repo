@@ -18,6 +18,8 @@
 
 ## 技术架构
 
+- **源文件位置**：`src/web/todo/`（index.html, style.css, app.js）
+- **分支命名规范**：`flyinghub-YYYYMMDDHHmmss`
 - **架构风格**：单体 SPA（Single-Page Application）
 - **核心组件**：
   - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
@@ -70,4 +72,4 @@
 
 - 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
 - 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- ADR 位置：`docs/adr/`
