@@ -43,6 +43,10 @@
         </div>
         <div class="toolbar__actions">
           <span class="toolbar__count" id="itemCount">0 项待办</span>
+          <div class="toolbar__io">
+            <button class="toolbar__export btn btn--icon" id="btnExport" title="导出数据">📤</button>
+            <button class="toolbar__import btn btn--icon" id="btnImport" title="导入数据">📥</button>
+          </div>
           <button class="toolbar__clear btn btn--text" id="clearCompleted">清除已完成</button>
         </div>
       </section>
@@ -64,6 +68,9 @@
       <p class="footer__text">数据存储在浏览器本地</p>
     </footer>
   </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="fileInput" accept=".json,.txt" hidden>
 
   <script src="app.js"></script>
 </body>

@@ -228,6 +228,19 @@ body {
   color: var(--color-text-secondary);
 }
 
+.toolbar__io {
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar__export:hover {
+  color: var(--color-primary) !important;
+}
+
+.toolbar__import:hover {
+  color: var(--color-success) !important;
+}
+
 /* =========================================
    Todo List
    ========================================= */
