@@ -1,44 +1,193 @@
 /* ============================================================
    Todo List App — app.js
-   Version: v1.0
-   Modules: Store (localStorage CRUD), UI (rendering), Events (DOM bindings)
+   Version: v1.1
+   Modules: Store (localStorage CRUD + validation), App (state, render, events)
    ============================================================ */
 
 /* ============================================================
    Module 1: Store (Data Layer)
-   localStorage CRUD operations, IIFE encapsulation.
+   localStorage CRUD operations with data validation, IIFE encapsulation.
    ============================================================ */
 const Store = (function () {
   'use strict';
 
   const STORAGE_KEY = 'todo_items';
 
+  /* ---- Validation ---- */
+
+  /**
+   * Validate a single todo item.
+   * @param {*} item
+   * @returns {boolean}
+   */
+  function isValidTodo(item) {
+    return (
+      item &&
+      typeof item.id === 'string' &&
+      item.id.length > 0 &&
+      typeof item.title === 'string' &&
+      item.title.trim().length > 0 &&
+      typeof item.completed === 'boolean'
+    );
+  }
+
+  /**
+   * Sanitize an array — filter out invalid entries.
+   * @param {Array} arr
+   * @returns {Array}
+   */
+  function sanitize(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr.filter(isValidTodo);
+  }
+
+  /* ---- Storage I/O ---- */
+
+  /**
+   * Read and parse todos from localStorage.
+   * @returns {Array}
+   */
   function getTodos() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data === null) return [];
       const parsed = JSON.parse(data);
-      return Array.isArray(parsed) ? parsed : [];
+      return sanitize(parsed);
     } catch (err) {
-      console.warn('Store: failed to read localStorage.', err);
+      console.warn('[Store] Failed to read localStorage.', err);
       return [];
     }
   }
 
+  /**
+   * Serialize and write todos to localStorage.
+   * @param {Array} todos
+   */
   function saveTodos(todos) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     } catch (err) {
-      console.warn('Store: failed to write localStorage.', err);
+      console.error('[Store] Failed to write localStorage.', err);
     }
   }
 
-  return { getTodos, saveTodos };
+  /* ---- ID Generation ---- */
+
+  /**
+   * Generate a unique ID for a todo.
+   * @returns {string}
+   */
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  /* ---- Public CRUD API ---- */
+
+  return {
+    /**
+     * Get all todos.
+     * @returns {Array}
+     */
+    getTodos: getTodos,
+
+    /**
+     * Add a new todo.
+     * @param {string} title
+     * @returns {Object|null} The created todo, or null if invalid.
+     */
+    addTodo: function (title) {
+      const trimmed = (title || '').trim();
+      if (!trimmed) return null;
+
+      const todo = {
+        id: generateId(),
+        title: trimmed,
+        completed: false,
+        createdAt: Date.now()
+      };
+
+      const todos = getTodos();
+      todos.push(todo);
+      saveTodos(todos);
+      return todo;
+    },
+
+    /**
+     * Delete a todo by id.
+     * @param {string} id
+     * @returns {boolean} Whether deletion succeeded.
+     */
+    deleteTodo: function (id) {
+      if (!id) return false;
+      const todos = getTodos();
+      const length = todos.length;
+      const filtered = todos.filter(function (t) { return t.id !== id; });
+      if (filtered.length === length) return false;
+      saveTodos(filtered);
+      return true;
+    },
+
+    /**
+     * Toggle a todo's completed state.
+     * @param {string} id
+     * @returns {boolean|null} New completed state, or null if not found.
+     */
+    toggleTodo: function (id) {
+      if (!id) return null;
+      const todos = getTodos();
+      const todo = todos.find(function (t) { return t.id === id; });
+      if (!todo) return null;
+      todo.completed = !todo.completed;
+      saveTodos(todos);
+      return todo.completed;
+    },
+
+    /**
+     * Update a todo's title.
+     * @param {string} id
+     * @param {string} newTitle
+     * @returns {boolean} Whether update succeeded.
+     */
+    updateTodo: function (id, newTitle) {
+      const trimmed = (newTitle || '').trim();
+      if (!id || !trimmed) return false;
+      const todos = getTodos();
+      const todo = todos.find(function (t) { return t.id === id; });
+      if (!todo) return false;
+      todo.title = trimmed;
+      saveTodos(todos);
+      return true;
+    },
+
+    /**
+     * Remove all completed todos.
+     * @returns {number} Number of removed items.
+     */
+    clearCompleted: function () {
+      const todos = getTodos();
+      const remaining = todos.filter(function (t) { return !t.completed; });
+      const removed = todos.length - remaining.length;
+      if (removed > 0) saveTodos(remaining);
+      return removed;
+    },
+
+    /**
+     * Get count of todos matching a filter.
+     * @param {'all'|'active'|'completed'} filter
+     * @returns {number}
+     */
+    count: function (filter) {
+      const todos = getTodos();
+      if (filter === 'active') return todos.filter(function (t) { return !t.completed; }).length;
+      if (filter === 'completed') return todos.filter(function (t) { return t.completed; }).length;
+      return todos.length;
+    }
+  };
 })();
 
 /* ============================================================
-   Module 2: State & UI Render
-   Central state, CRUD, filter logic, and DOM rendering.
+   Module 2: App (UI State, Rendering & Events)
+   Central state management, DOM rendering, and event binding.
    ============================================================ */
 const App = (function () {
   'use strict';
@@ -59,68 +208,54 @@ const App = (function () {
   const $filterCompleted = document.getElementById('filter-completed');
 
   /* ---- Helpers ---- */
-  function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  }
-
   function save() {
     Store.saveTodos(todos);
   }
 
   function getFilteredTodos() {
-    if (filter === 'active') return todos.filter(t => !t.completed);
-    if (filter === 'completed') return todos.filter(t => t.completed);
+    if (filter === 'active') return todos.filter(function (t) { return !t.completed; });
+    if (filter === 'completed') return todos.filter(function (t) { return t.completed; });
     return todos;
   }
 
   function activeCount() {
-    return todos.filter(t => !t.completed).length;
+    return todos.filter(function (t) { return !t.completed; }).length;
   }
 
   function completedCount() {
-    return todos.filter(t => t.completed).length;
+    return todos.filter(function (t) { return t.completed; }).length;
   }
 
-  /* ---- CRUD Operations ---- */
+  /* ---- CRUD Operations (delegate to Store) ---- */
   function addTodo(title) {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    todos.push({
-      id: generateId(),
-      title: trimmed,
-      completed: false,
-      createdAt: Date.now()
-    });
-    save();
-    render();
+    var todo = Store.addTodo(title);
+    if (todo) {
+      todos.push(todo);
+      render();
+    }
   }
 
   function deleteTodo(id) {
-    todos = todos.filter(t => t.id !== id);
-    if (editingId === id) editingId = null;
-    save();
-    render();
+    if (Store.deleteTodo(id)) {
+      todos = todos.filter(function (t) { return t.id !== id; });
+      if (editingId === id) editingId = null;
+      render();
+    }
   }
 
   function toggleTodo(id) {
-    const todo = todos.find(t => t.id === id);
-    if (todo) {
-      todo.completed = !todo.completed;
-      save();
+    var newState = Store.toggleTodo(id);
+    if (newState !== null) {
+      var todo = todos.find(function (t) { return t.id === id; });
+      if (todo) todo.completed = newState;
       render();
     }
   }
 
   function updateTodo(id, title) {
-    const trimmed = title.trim();
-    if (!trimmed) {
-      deleteTodo(id);
-      return;
-    }
-    const todo = todos.find(t => t.id === id);
-    if (todo) {
-      todo.title = trimmed;
-      save();
+    if (Store.updateTodo(id, title)) {
+      var todo = todos.find(function (t) { return t.id === id; });
+      if (todo) todo.title = title.trim();
       render();
     }
   }
@@ -131,8 +266,8 @@ const App = (function () {
   }
 
   function clearCompleted() {
-    todos = todos.filter(t => !t.completed);
-    save();
+    Store.clearCompleted();
+    todos = todos.filter(function (t) { return !t.completed; });
     render();
   }
 
@@ -140,7 +275,7 @@ const App = (function () {
     editingId = id;
     render();
     if (id) {
-      const $input = document.querySelector(`li[data-id="${id}"] .edit`);
+      var $input = document.querySelector('li[data-id="' + id + '"] .edit');
       if ($input) {
         $input.focus();
         $input.setSelectionRange($input.value.length, $input.value.length);
@@ -155,22 +290,22 @@ const App = (function () {
 
   /* ---- Render ---- */
   function render() {
-    const filtered = getFilteredTodos();
-    const active = activeCount();
-    const completed = completedCount();
+    var filtered = getFilteredTodos();
+    var active = activeCount();
+    var completed = completedCount();
 
     /* Footer visibility */
     $footer.style.display = todos.length === 0 ? 'none' : 'flex';
 
     /* Count */
-    $todoCount.innerHTML = `<strong>${active}</strong> ${active === 1 ? 'item' : 'items'} left`;
+    $todoCount.innerHTML = '<strong>' + active + '</strong> ' + (active === 1 ? 'item' : 'items') + ' left';
 
     /* Clear completed */
     $clearCompleted.disabled = completed === 0;
     $clearCompleted.style.display = completed > 0 ? 'inline-block' : 'none';
 
     /* Filter selection */
-    [$filterAll, $filterActive, $filterCompleted].forEach($el => $el.classList.remove('selected'));
+    [$filterAll, $filterActive, $filterCompleted].forEach(function ($el) { $el.classList.remove('selected'); });
     if (filter === 'all') $filterAll.classList.add('selected');
     else if (filter === 'active') $filterActive.classList.add('selected');
     else if (filter === 'completed') $filterCompleted.classList.add('selected');
@@ -181,24 +316,27 @@ const App = (function () {
       return;
     }
 
-    let html = '';
-    for (const todo of filtered) {
-      const isEditing = editingId === todo.id;
-      html += `<li data-id="${todo.id}" class="${todo.completed ? 'completed' : ''}${isEditing ? ' editing' : ''}">
-        <div class="view">
-          <input class="toggle" type="checkbox" ${todo.completed ? 'checked' : ''}>
-          <label>${escapeHtml(todo.title)}</label>
-          <button class="destroy"></button>
-        </div>
-        <input class="edit" value="${escapeHtml(todo.title)}">
-      </li>`;
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+      var todo = filtered[i];
+      var isEditing = editingId === todo.id;
+      var itemClass = todo.completed ? 'completed' : '';
+      if (isEditing) itemClass += ' editing';
+      html += '<li data-id="' + todo.id + '" class="' + itemClass + '">'
+        + '<div class="view">'
+        + '<input class="toggle" type="checkbox"' + (todo.completed ? ' checked' : '') + '>'
+        + '<label>' + escapeHtml(todo.title) + '</label>'
+        + '<button class="destroy"></button>'
+        + '</div>'
+        + '<input class="edit" value="' + escapeHtml(todo.title) + '">'
+        + '</li>';
     }
     $todoList.innerHTML = html;
   }
 
   /* ---- Escape HTML entities ---- */
   function escapeHtml(str) {
-    const div = document.createElement('div');
+    var div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
   }
@@ -215,9 +353,9 @@ const App = (function () {
 
     /* Delegate clicks on todo list (toggle, destroy) */
     $todoList.addEventListener('click', function (e) {
-      const $li = e.target.closest('li[data-id]');
+      var $li = e.target.closest('li[data-id]');
       if (!$li) return;
-      const id = $li.dataset.id;
+      var id = $li.dataset.id;
 
       if (e.target.classList.contains('toggle')) {
         toggleTodo(id);
@@ -228,9 +366,9 @@ const App = (function () {
 
     /* Double-click label to enter edit mode */
     $todoList.addEventListener('dblclick', function (e) {
-      const $label = e.target.closest('label');
+      var $label = e.target.closest('label');
       if (!$label) return;
-      const $li = $label.closest('li[data-id]');
+      var $li = $label.closest('li[data-id]');
       if (!$li) return;
       setEditing($li.dataset.id);
     });
@@ -238,11 +376,11 @@ const App = (function () {
     /* Edit input: Enter saves, Escape cancels */
     $todoList.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter' && e.key !== 'Escape') return;
-      const $input = e.target.closest('.edit');
+      var $input = e.target.closest('.edit');
       if (!$input) return;
-      const $li = $input.closest('li[data-id]');
+      var $li = $input.closest('li[data-id]');
       if (!$li) return;
-      const id = $li.dataset.id;
+      var id = $li.dataset.id;
 
       if (e.key === 'Enter') {
         updateTodo(id, $input.value);
@@ -253,9 +391,9 @@ const App = (function () {
 
     /* Blur from edit input saves */
     $todoList.addEventListener('blur', function (e) {
-      const $input = e.target.closest('.edit');
+      var $input = e.target.closest('.edit');
       if (!$input) return;
-      const $li = $input.closest('li[data-id]');
+      var $li = $input.closest('li[data-id]');
       if (!$li) return;
       /* Small delay so click on destroy can fire before we save */
       setTimeout(function () {
@@ -275,11 +413,10 @@ const App = (function () {
 
     /* Hash change routing */
     window.addEventListener('hashchange', function () {
-      const hash = window.location.hash.replace('#/', '') || 'all';
-      if (['all', 'active', 'completed'].includes(hash)) {
+      var hash = window.location.hash.replace('#/', '') || 'all';
+      if (['all', 'active', 'completed'].indexOf(hash) !== -1) {
         setFilter(hash);
-        /* Update filter visual */
-        [$filterAll, $filterActive, $filterCompleted].forEach($el => $el.classList.remove('selected'));
+        [$filterAll, $filterActive, $filterCompleted].forEach(function ($el) { $el.classList.remove('selected'); });
         if (hash === 'all') $filterAll.classList.add('selected');
         else if (hash === 'active') $filterActive.classList.add('selected');
         else if (hash === 'completed') $filterCompleted.classList.add('selected');
@@ -291,13 +428,13 @@ const App = (function () {
   function init() {
     todos = Store.getTodos();
     /* Parse hash on load */
-    const hash = window.location.hash.replace('#/', '') || 'all';
-    if (['all', 'active', 'completed'].includes(hash)) filter = hash;
+    var hash = window.location.hash.replace('#/', '') || 'all';
+    if (['all', 'active', 'completed'].indexOf(hash) !== -1) filter = hash;
     render();
     bindEvents();
   }
 
-  return { init };
+  return { init: init };
 })();
 
 /* ---- Bootstrap ---- */
