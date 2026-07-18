@@ -5,6 +5,11 @@
  * Architecture:
  *   Model Layer  — todoStore (CRUD + localStorage I/O)
  *   View Layer   — todoApp (DOM rendering + event binding)
+ *
+ * Contract: .ai/about.md
+ *   - Data: { id: string, title: string, completed: boolean, createdAt: number }
+ *   - Storage key: "todo_items"
+ *   - No innerHTML for user content
  */
 
 /* =============================================
@@ -12,26 +17,39 @@
    ============================================= */
 
 const todoStore = {
-  /** @type {string} localStorage key */
-  STORAGE_KEY: 'todolist_todos',
+  /** @type {string} localStorage key (per contract) */
+  STORAGE_KEY: 'todo_items',
+
+  /**
+   * Generate a short random string id (e.g. "m3xq8f2k1a").
+   * @returns {string}
+   */
+  _generateId() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let id = '';
+    for (let i = 0; i < 9; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  },
 
   /**
    * Load todos from localStorage.
-   * @returns {Array<{id:number, text:string, completed:boolean}>}
+   * @returns {Array<{id:string, title:string, completed:boolean, createdAt:number}>}
    */
   load() {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      // Validate structure
       if (!Array.isArray(parsed)) return [];
       return parsed.filter(
         (item) =>
           item &&
-          typeof item.id === 'number' &&
-          typeof item.text === 'string' &&
-          typeof item.completed === 'boolean'
+          typeof item.id === 'string' &&
+          typeof item.title === 'string' &&
+          typeof item.completed === 'boolean' &&
+          typeof item.createdAt === 'number'
       );
     } catch {
       return [];
@@ -52,13 +70,17 @@ const todoStore = {
 
   /**
    * Add a new todo.
-   * @param {string} text
+   * @param {string} title
    * @returns {Array} updated todos array
    */
-  add(text) {
+  add(title) {
     const todos = this.load();
-    const id = todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1;
-    const todo = { id, text: text.trim(), completed: false };
+    const todo = {
+      id: this._generateId(),
+      title: title.trim(),
+      completed: false,
+      createdAt: Date.now(),
+    };
     todos.push(todo);
     this.save(todos);
     return todos;
@@ -66,7 +88,7 @@ const todoStore = {
 
   /**
    * Toggle completed state.
-   * @param {number} id
+   * @param {string} id
    * @returns {Array} updated todos array
    */
   toggle(id) {
@@ -80,18 +102,18 @@ const todoStore = {
   },
 
   /**
-   * Update todo text.
-   * @param {number} id
-   * @param {string} text
+   * Update todo title.
+   * @param {string} id
+   * @param {string} title
    * @returns {Array} updated todos array
    */
-  update(id, text) {
-    const trimmed = text.trim();
+  update(id, title) {
+    const trimmed = title.trim();
     if (!trimmed) return this.load();
     const todos = this.load();
     const todo = todos.find((t) => t.id === id);
     if (todo) {
-      todo.text = trimmed;
+      todo.title = trimmed;
       this.save(todos);
     }
     return todos;
@@ -99,7 +121,7 @@ const todoStore = {
 
   /**
    * Delete a todo by id.
-   * @param {number} id
+   * @param {string} id
    * @returns {Array} updated todos array
    */
   delete(id) {
@@ -126,7 +148,7 @@ const todoStore = {
 const todoApp = {
   /** @type {'all'|'active'|'completed'} */
   currentFilter: 'all',
-  /** @type {number|null} Currently editing todo id */
+  /** @type {string|null} Currently editing todo id */
   editingId: null,
 
   /** DOM element references */
@@ -134,7 +156,6 @@ const todoApp = {
 
   /** Initialize the app */
   init() {
-    // Cache DOM references
     this.els = {
       form: document.getElementById('todo-form'),
       input: document.getElementById('todo-input'),
@@ -146,14 +167,12 @@ const todoApp = {
       filterBtns: document.querySelectorAll('.filter-btn'),
     };
 
-    // Bind events
     this.els.form.addEventListener('submit', (e) => this.handleAdd(e));
     this.els.clearCompletedBtn.addEventListener('click', () => this.handleClearCompleted());
     this.els.filterBtns.forEach((btn) =>
       btn.addEventListener('click', () => this.setFilter(btn.dataset.filter))
     );
 
-    // Initial render
     this.render();
   },
 
@@ -172,92 +191,98 @@ const todoApp = {
     const activeCount = allTodos.filter((t) => !t.completed).length;
     const hasCompleted = allTodos.some((t) => t.completed);
 
-    // Update item count
     this.els.itemCount.textContent = `${activeCount} item${activeCount !== 1 ? 's' : ''} left`;
 
-    // Toggle clear-completed button
     this.els.clearCompletedWrapper.classList.toggle('hidden', !hasCompleted);
 
-    // Render list
     this.renderList(filtered);
 
-    // Toggle empty state
     const isEmpty = filtered.length === 0;
     this.els.emptyState.classList.toggle('hidden', !isEmpty);
     this.els.list.classList.toggle('hidden', isEmpty);
 
-    // Update filter button active state
     this.els.filterBtns.forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.filter === this.currentFilter);
     });
   },
 
   /**
-   * Render the todo list items.
+   * Render the todo list items using DOM APIs (no innerHTML for user content).
    * @param {Array} todos
    */
   renderList(todos) {
-    this.els.list.innerHTML = todos
-      .map(
-        (todo) => `
-      <li class="todo-item" data-id="${todo.id}">
-        <input
-          type="checkbox"
-          class="todo-checkbox"
-          ${todo.completed ? 'checked' : ''}
-          aria-label="Mark '${this.escapeHtml(todo.text)}' as ${todo.completed ? 'incomplete' : 'complete'}"
-        >
-        ${
-          this.editingId === todo.id
-            ? `<input type="text" class="todo-edit-input" value="${this.escapeHtml(todo.text)}" autofocus>`
-            : `<span class="todo-text ${todo.completed ? 'completed' : ''}">${this.escapeHtml(todo.text)}</span>`
-        }
-        <button class="btn-icon delete-btn" aria-label="Delete '${this.escapeHtml(todo.text)}'">🗑️</button>
-      </li>`
-      )
-      .join('');
+    const list = this.els.list;
+    // Clear list efficiently
+    while (list.firstChild) {
+      list.removeChild(list.firstChild);
+    }
 
-    // Bind dynamic events
-    this.bindItemEvents();
+    todos.forEach((todo) => {
+      const li = this._createTodoItem(todo);
+      list.appendChild(li);
+    });
   },
 
-  /** Bind events for list item elements */
-  bindItemEvents() {
-    const items = this.els.list.querySelectorAll('.todo-item');
+  /**
+   * Create a single todo list item element.
+   * @param {{id:string, title:string, completed:boolean}} todo
+   * @returns {HTMLLIElement}
+   */
+  _createTodoItem(todo) {
+    const li = document.createElement('li');
+    li.className = 'todo-item';
+    li.dataset.id = todo.id;
 
-    items.forEach((item) => {
-      const id = parseInt(item.dataset.id, 10);
+    // Checkbox
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'todo-checkbox';
+    checkbox.checked = todo.completed;
+    checkbox.setAttribute(
+      'aria-label',
+      `Mark '${todo.title}' as ${todo.completed ? 'incomplete' : 'complete'}`
+    );
+    checkbox.addEventListener('change', () => this.handleToggle(todo.id));
 
-      // Checkbox toggle
-      const checkbox = item.querySelector('.todo-checkbox');
-      if (checkbox) {
-        checkbox.addEventListener('change', () => this.handleToggle(id));
-      }
+    // Title or edit input
+    if (this.editingId === todo.id) {
+      const editInput = document.createElement('input');
+      editInput.type = 'text';
+      editInput.className = 'todo-edit-input';
+      editInput.value = todo.title;
+      editInput.setAttribute('autofocus', '');
 
-      // Delete button
-      const deleteBtn = item.querySelector('.delete-btn');
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => this.handleDelete(id));
-      }
+      editInput.addEventListener('keydown', (e) => this.handleEditKeydown(e, todo.id));
+      editInput.addEventListener('blur', () => this.finishEdit(todo.id));
 
-      // Double-click to edit (only on text span, not on edit input)
-      const textSpan = item.querySelector('.todo-text');
-      if (textSpan) {
-        textSpan.addEventListener('dblclick', () => this.startEdit(id));
-      }
+      // Focus and select after mount
+      requestAnimationFrame(() => {
+        editInput.focus();
+        editInput.select();
+      });
 
-      // Edit input keydown/blur
-      const editInput = item.querySelector('.todo-edit-input');
-      if (editInput) {
-        editInput.addEventListener('keydown', (e) => this.handleEditKeydown(e, id));
-        editInput.addEventListener('blur', () => this.finishEdit(id));
-        // Focus and select text
-        setTimeout(() => {
-          editInput.focus();
-          editInput.select();
-        }, 0);
-      }
-    });
+      li.appendChild(checkbox);
+      li.appendChild(editInput);
+    } else {
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'todo-text' + (todo.completed ? ' completed' : '');
+      titleSpan.textContent = todo.title; // safe — no innerHTML
+      titleSpan.addEventListener('dblclick', () => this.startEdit(todo.id));
+
+      li.appendChild(checkbox);
+      li.appendChild(titleSpan);
+    }
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-icon delete-btn';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.setAttribute('aria-label', `Delete '${todo.title}'`);
+    deleteBtn.addEventListener('click', () => this.handleDelete(todo.id));
+
+    li.appendChild(deleteBtn);
+
+    return li;
   },
 
   /* ---- Event Handlers ---- */
@@ -268,10 +293,10 @@ const todoApp = {
    */
   handleAdd(e) {
     e.preventDefault();
-    const text = this.els.input.value.trim();
-    if (!text) return;
+    const title = this.els.input.value.trim();
+    if (!title) return;
     this.editingId = null;
-    todoStore.add(text);
+    todoStore.add(title);
     this.els.input.value = '';
     this.els.input.focus();
     this.render();
@@ -279,7 +304,7 @@ const todoApp = {
 
   /**
    * Handle checkbox toggle.
-   * @param {number} id
+   * @param {string} id
    */
   handleToggle(id) {
     todoStore.toggle(id);
@@ -288,7 +313,7 @@ const todoApp = {
 
   /**
    * Handle delete.
-   * @param {number} id
+   * @param {string} id
    */
   handleDelete(id) {
     if (this.editingId === id) this.editingId = null;
@@ -298,7 +323,7 @@ const todoApp = {
 
   /**
    * Start editing a todo.
-   * @param {number} id
+   * @param {string} id
    */
   startEdit(id) {
     this.editingId = id;
@@ -308,7 +333,7 @@ const todoApp = {
   /**
    * Handle keydown during editing.
    * @param {KeyboardEvent} e
-   * @param {number} id
+   * @param {string} id
    */
   handleEditKeydown(e, id) {
     if (e.key === 'Enter') {
@@ -321,16 +346,16 @@ const todoApp = {
   },
 
   /**
-   * Finish editing — save text.
-   * @param {number} id
+   * Finish editing — save title.
+   * @param {string} id
    */
   finishEdit(id) {
-    const item = this.els.list.querySelector(`.todo-item[data-id="${id}"]`);
+    const item = this.els.list.querySelector(`.todo-item[data-id="${CSS.escape(id)}"]`);
     const input = item?.querySelector('.todo-edit-input');
     if (input) {
-      const text = input.value.trim();
-      if (text) {
-        todoStore.update(id, text);
+      const title = input.value.trim();
+      if (title) {
+        todoStore.update(id, title);
       }
     }
     this.editingId = null;
@@ -352,17 +377,6 @@ const todoApp = {
     this.currentFilter = filter;
     this.editingId = null;
     this.render();
-  },
-
-  /**
-   * Escape HTML special characters (XSS prevention).
-   * @param {string} str
-   * @returns {string}
-   */
-  escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
   },
 };
 
