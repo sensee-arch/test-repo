@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="container">
+    <header class="header">
+      <h1>TodoList</h1>
+      <p class="subtitle">Stay organized, stay productive</p>
+    </header>
+
+    <main>
+      <section class="input-area">
+        <form id="todo-form" class="todo-form">
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="What needs to be done?"
+            autocomplete="off"
+            autofocus
+          />
+          <button type="submit" id="add-btn" class="btn btn-primary">Add</button>
+        </form>
+      </section>
+
+      <section class="toolbar">
+        <span id="item-count" class="item-count">0 items left</span>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+        <button id="clear-completed" class="btn btn-ghost">Clear completed</button>
+      </section>
+
+      <section id="todo-list" class="todo-list">
+        <!-- Tasks rendered by JS -->
+      </section>
+
+      <section id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">📋</div>
+        <p>No tasks yet. Add one above!</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
