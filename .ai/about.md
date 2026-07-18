@@ -1,73 +1,87 @@
-# .ai/about.md — AI Agent Project Constitution
+# .ai/about.md — Project Constitution
 
-## 项目概述
+## Project Overview
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **Name:** test-repo
+- **Type:** Experimental Python project — AI Agent collaborative programming testbed
+- **Repository:** https://github.com/sensee-arch/test-repo
+- **Description:** A scaffolding/template project for exercising multi-Agent collaborative workflows on GitHub. Serves as a sandbox for requirements → planning → task assignment → development → review pipelines.
+- **Status:** Initial scaffolding phase — no application source code on `main` yet. Configuration, tooling, and documentation established.
 
-## 核心目标
+## Core Objectives
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ✅ Establish a standardized multi-Agent collaboration workflow (Spec → Plan → Contract → Dev → Review)
+- ✅ Provide a reproducible project scaffold with Python/FastAPI toolchain
+- ✅ Archive reusable templates, ADRs, and process artifacts
+- ✅ Verify GitHub-based Agent coordination including branch operations, PR workflows, and CI triggers
+- ❌ Not a production application — no deployment, no real users
+- ❌ Not a framework or library — will not be published to PyPI/npm
 
-## 技术架构
+## Technical Architecture
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **Language:** Python 3.10+ (virtual env at `.venv/`)
+- **Web framework:** FastAPI (via `fastapi>=0.104.0`, `uvicorn[standard]`)
+- **Data validation:** Pydantic v2
+- **Testing:** pytest + pytest-cov + httpx (for async test client)
+- **Linting:** Ruff
+- **API style:** RESTful (planned)
+- **Database:** SQLite (dev) / PostgreSQL (production) — not yet configured
+- **No frontend code on `main`** — UI work lives in feature branches
 
-## 基础契约
+### Key files on `main`
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+| File | Purpose |
+|------|---------|
+| `requirements.txt` | Production deps: FastAPI, uvicorn, pydantic |
+| `requirements-dev.txt` | Dev deps: pytest, ruff, httpx |
+| `ARCH.md` | Architecture document (expanded) |
+| `.ai/about.md` | This file — AI project constitution |
+| `.ai/workspace.md` | Session workspace metadata |
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
-```
+## Base Contract
 
-## Agent 划分
+- Branch format: `flyinghub-YYYYMMDDHHmmss` for boot branches; `feat/<name>` for feature branches
+- Commit format: `<type>: <description>` — types: feat, fix, docs, refactor, test, chore, style
+- `main` is the stable trunk — always deployable, no WIP code
+- All PRs must pass review before merge to main
+- `action_trace` field (base64 Markdown with Reasoning/Decision/Action/Observation/Reflection) required for non-trivial operations
+- **Forbidden:** `innerHTML` with user content; `eval()` / `new Function()`; `../` path traversal; plaintext credentials in output
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Error Handling
 
-## 运行与依赖
+- localStorage operations: silent degrade with `console.warn`
+- API errors: structured JSON error response (planned)
+- Auto-fix: retry 2-3 times before escalation
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+## Agent Division
 
-## 协作规则
+| Agent | Responsibility | Input | Output |
+|-------|---------------|-------|--------|
+| **Manager** | Requirements analysis, spec writing, plan decomposition, contract authoring | User request / group message | `spec.md`, `plan.md`, `contract.md` |
+| **Developer** | Coding, testing, committing | Task description | Code commits, test results |
+| **Reviewer** | Code review, AC verification, PR approval | Changed files, test output | Review report (pass/fail/changes requested) |
+| **Host** | Chat coordination, status broadcast, environment bootstrap | User commands | Status messages in group chat |
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+## Running & Dependencies
 
-## 演进原则
+- **Runtime:** Python 3.10+ (`.venv/` already set up)
+- **Start command:** `uvicorn main:app --reload` (after implementing `main.py`)
+- **Tests:** `pytest` (with coverage: `pytest --cov`)
+- **Lint:** `ruff check .`
+- **Branch operation:** `git checkout -b flyinghub-<timestamp>` from `main`
+- No Docker, no build tools, no external services required for development
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+## Collaboration Rules
+
+1. **Contract-first:** Spec → Plan → Contract must precede any code changes
+2. **Isolation:** Each Hub maintains its own branch and documents — no cross-Hub state sharing
+3. **Traceability:** All operations logged via `action_trace` base64 field
+4. **Self-healing:** Errors auto-resolved (retry 2-3×) before escalation
+5. **Review required:** Every PR needs at least one Agent review before merge
+
+## Evolution Principles
+
+- Contract before implementation — no coding without prior Spec and Contract
+- New capabilities add new modules; never break existing module boundaries
+- ADRs (Architecture Decision Records) stored in `docs/adr/` as new decisions are made
+- This document evolves alongside the project — update when architecture, conventions, or agent roles change
