@@ -249,50 +249,67 @@ class App {
 
     // Toggle empty state
     if (this.tasks.length === 0) {
-      this.$.list.innerHTML = '';
+      this._clearList();
       this.$.empty.classList.remove('hidden');
       return;
     }
     this.$.empty.classList.add('hidden');
 
-    // Render task items
-    this.$.list.innerHTML = filtered.map(task => this.renderTask(task)).join('');
-
-    // Re-check checkboxes after DOM injection (ensure checked state)
-    filtered.forEach(task => {
-      const checkbox = document.querySelector(`.todo-item[data-id="${task.id}"] .todo-checkbox`);
-      if (checkbox && task.completed) {
-        checkbox.checked = true;
-      }
-    });
+    // Rebuild list with DOM manipulation (no innerHTML with user content)
+    this._clearList();
+    for (const task of filtered) {
+      this.$.list.appendChild(this._createTaskElement(task));
+    }
   }
 
-  /** Render a single task item as HTML string */
-  renderTask(task) {
-    const isEditing = this.editingId === task.id;
-    const textClass = task.completed ? 'todo-text completed' : 'todo-text';
+  /** Remove all children from the list */
+  _clearList() {
+    while (this.$.list.firstChild) {
+      this.$.list.removeChild(this.$.list.firstChild);
+    }
+  }
 
-    let textContent;
-    if (isEditing) {
-      textContent = `<input type="text" class="todo-edit-input" value="${this.escapeHtml(task.text)}" />`;
-    } else {
-      textContent = `<span class="${textClass}">${this.escapeHtml(task.text)}</span>`;
+  /** Create a task list item DOM element (no innerHTML with user content) */
+  _createTaskElement(task) {
+    const isEditing = this.editingId === task.id;
+
+    // <li class="todo-item" data-id="...">
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (task.completed ? ' completed' : '');
+    li.dataset.id = task.id;
+
+    // <input type="checkbox" class="todo-checkbox" />
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'todo-checkbox';
+    if (task.completed) {
+      checkbox.checked = true;
     }
 
-    return `
-      <li class="todo-item${task.completed ? ' completed' : ''}" data-id="${task.id}">
-        <input type="checkbox" class="todo-checkbox" ${task.completed ? 'checked' : ''} />
-        ${textContent}
-        <button class="delete-btn" title="Delete task">&times;</button>
-      </li>
-    `;
-  }
+    // Text or edit input (safe textContent, never innerHTML with user data)
+    let textEl;
+    if (isEditing) {
+      textEl = document.createElement('input');
+      textEl.type = 'text';
+      textEl.className = 'todo-edit-input';
+      textEl.value = task.text;
+    } else {
+      textEl = document.createElement('span');
+      textEl.className = 'todo-text' + (task.completed ? ' completed' : '');
+      textEl.textContent = task.text;
+    }
 
-  /** Escape HTML to prevent XSS */
-  escapeHtml(str) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
+    // <button class="delete-btn">&times;</button>
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.title = 'Delete task';
+    deleteBtn.textContent = '\u00D7'; // &times; entity
+
+    li.appendChild(checkbox);
+    li.appendChild(textEl);
+    li.appendChild(deleteBtn);
+
+    return li;
   }
 }
 
