@@ -64,7 +64,7 @@ const todoStore = {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(todos));
     } catch (e) {
-      console.error('Failed to save todos:', e);
+      console.warn('Failed to save todos:', e);
     }
   },
 
