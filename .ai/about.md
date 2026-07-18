@@ -1,73 +1,144 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+> Repository: sensee-arch/test-repo
+> Updated: 2026-07-18
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+---
 
-## 核心目标
+## 1. Project Overview
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- **Name**: test-repo
+- **Type**: Python/FastAPI multi-Agent collaboration experiment platform
+- **Purpose**: Flexible experimental field for AI Agent collaborative programming — multiple AI Agents (Developers, Reviewers, Managers, Hosts) coordinate via git workflow to design, implement, and review features within a unified architectural framework
+- **Scope**: This project does **not** serve real users in production; it exists to validate AI Agent collaboration workflows, standardize processes, and accumulate best practices
+- **Key Documents**:
+  - `ARCH.md` — Architecture document (design decisions, tech stack rationale)
+  - `.ai/about.md` — This file; single source of truth for AI Agents
+  - `docs/adr/` — Architecture Decision Records
 
-## 技术架构
+## 2. Core Objectives
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- ✅ Validate and exercise AI Agent collaborative programming workflows
+- ✅ Establish a standardized AI project collaboration pipeline: Requirements → Spec → Plan → Task → Develop → Review → Merge
+- ✅ Explore reusable AI Agent collaboration templates and conventions
+- ✅ Document and accumulate practical experience from AI-assisted development
+- ✅ Provide a FastAPI scaffold ready for quick prototyping and verification
+- ❌ Not targeting production deployment or real user traffic
+- ❌ Not pursuing multi-device sync, PWA, or push notifications unless explicitly scoped
 
-## 基础契约
+## 3. Technical Architecture
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+- **Architecture Style**: Modular monolith with clear separation of concerns
+- **Language**: Python 3.10+
+- **Web Framework**: FastAPI (>=0.104.0)
+- **ASGI Server**: Uvicorn[standard] (>=0.24.0)
+- **Data Validation**: Pydantic (>=2.5.0)
+- **RESTful API** with future option for WebSocket support
+- **Optional Frontend**: Vanilla HTML/CSS/JS SPA (separate page per feature, e.g. Todo List)
+- **Data Layer**: In-memory, localStorage, or file-based (backend not yet selected; SQLite/PostgreSQL reserved for later)
+- **Testing**: pytest + pytest-cov + httpx (for async test client)
+- **Linting**: ruff (>=0.1.0)
+- **CI**: GitHub Actions (configured per feature branch)
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### Directory Convention
+
+```
+test-repo/
+├── src/                  # Source code (Python packages)
+│   ├── core/            # Core business logic
+│   ├── api/             # FastAPI route handlers
+│   ├── models/          # Pydantic data models
+│   ├── services/        # Business service layer
+│   └── utils/           # Utility functions
+├── tests/               # Test suite
+│   ├── unit/            # Unit tests
+│   └── integration/     # Integration tests
+├── docs/                # Documentation
+│   └── adr/            # Architecture Decision Records
+├── scripts/             # Helper scripts
+├── .ai/                 # AI Agent workspace
+├── requirements.txt     # Production dependencies
+├── requirements-dev.txt # Development dependencies
+├── ARCH.md              # Architecture document
+├── README.md            # Project readme
+└── LICENSE              # License
 ```
 
-## Agent 划分
+## 4. Base Contract
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+- **Data Format**: All JSON-serializable objects with Pydantic validation
+- **API Semantics**: RESTful (GET/POST/PUT/PATCH/DELETE) with consistent error responses
+- **Error Handling**: FastAPI exception handlers, no crash-on-bad-input; 400/404/422/500 consistent schema
+- **Forbidden**: `eval()`, `exec()`, `pickle.load()` on untrusted data; `innerHTML` for user content in frontend
+- **Type Annotations**: Required on all function signatures (parameters + return types)
+- **Commit Convention**: `<type>: <short description>` where type ∈ {feat, fix, docs, refactor, test, chore, style}
+- **Branch Naming**:
+  - Feature/task branches: `feat/<name>` or `flyinghub-YYYYMMDDHHmmss`
+  - Always branch from `main`, merge via PR
+- **Test Requirement**: Core logic must have pytest coverage; CI must pass before merge
 
-## 运行与依赖
+## 5. Agent Division
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+| Role | Responsibility | Input | Output |
+|------|---------------|-------|--------|
+| 🎙️ Host | Group chat host, broadcasts status and summaries | User messages | Group chat messages |
+| 🧠 Manager | Requirement analysis, spec/plan/contract design | User needs + Spec | Plan + Contract documents |
+| 💻 Developer | Code implementation, git commits | Task description | Code commits, PRs |
+| 👀 Reviewer | Code review, acceptance criteria verification | Code files, PR | Review report (pass/fail + comments) |
+| 🚀 (Boot) | Environment setup, branch creation, project analysis | Repo URL | Working branch & `.ai/about.md` |
 
-## 协作规则
+Each Agent role is stateless between sessions — all context is carried via git-managed documents and branch state.
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+## 6. Running & Dependencies
 
-## 演进原则
+### Runtime
+- Python 3.10+
+- pip-based dependency management
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### Setup
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+### Start Server
+```bash
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Run Tests
+```bash
+pytest
+```
+
+### Lint
+```bash
+ruff check .
+```
+
+### Dev Dependencies
+- `pytest>=7.4.0` / `pytest-cov>=4.1.0` — test framework + coverage
+- `ruff>=0.1.0` — fast Python linter
+- `httpx>=0.25.0` — async HTTP client (for FastAPI TestClient)
+
+## 7. Collaboration Rules
+
+- **Contract-First**: Any new feature must complete Spec → Plan → Contract before coding
+- **Context Isolation**: Each Hub maintains independent branches and documents; no cross-Hub state sharing
+- **No Assumptions**: Never assume global state or historical memory — always read current files
+- **Logging**: Agent actions logged via `action_log` (base64-encoded JSON) with steps, errors, results
+- **Boot Procedure**: Every new session starts with `git pull` + branch creation + `.ai/about.md` check
+- **Commit Responsibility**: Developer commits must be testable; Reviewer must verify before approving merge
+- **ADR Maintenance**: Significant architectural decisions recorded in `docs/adr/` for traceability
+
+## 8. Evolution Principles
+
+- **Contract over Implementation**: New features require a documented contract before any code
+- **Add, Don't Break**: New capabilities prefer new modules over modifying existing module boundaries
+- **Testable, Not Fragile**: Core logic must be unit-testable; avoid tight coupling to frameworks
+- **Simple First**: No over-engineering; choose the simplest solution that satisfies the current need
+- **Replaceable Components**: Decouple via interfaces so individual components can be swapped out
+- **Document Reasoning**: `.ai/about.md` and `ARCH.md` capture the "why" behind decisions, not just the "what"
+- **ADR Location**: `docs/adr/` — each decision is a numbered file with date, context, decision, consequences
