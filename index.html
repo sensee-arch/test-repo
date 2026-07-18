@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📋 Todo List</h1>
+      <p class="subtitle">Stay organized, get things done</p>
+    </header>
+
+    <main>
+      <form id="todo-form" class="todo-form">
+        <div class="input-group">
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="What needs to be done?"
+            required
+            autocomplete="off"
+          >
+          <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+      </form>
+
+      <div class="controls">
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+        <span id="item-count" class="item-count">0 items left</span>
+      </div>
+
+      <ul id="todo-list" class="todo-list"></ul>
+
+      <div id="empty-state" class="empty-state">
+        <p>No tasks yet. Add one above!</p>
+      </div>
+
+      <div id="clear-completed-wrapper" class="clear-completed-wrapper hidden">
+        <button id="clear-completed" class="btn btn-link">Clear completed</button>
+      </div>
+    </main>
+
+    <footer>
+      <p>Double-click a task to edit. Data saved locally.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
