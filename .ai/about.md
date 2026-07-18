@@ -1,73 +1,175 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+> Last updated: 2026-07-18
+> Repository: [sensee-arch/test-repo](https://github.com/sensee-arch/test-repo)
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+---
 
-## 核心目标
+## 1. Project Overview
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- **Name**: test-repo
+- **Purpose**: An experimental/test repository for AI Agent collaborative programming workflows. This project serves as a sandbox to validate multi-agent development patterns, standardize collaboration protocols, and produce reusable templates.
+- **Scope**: Backend API prototyping, workflow validation, and template/knowledge-base accumulation. The project does not target production deployment; it is a development and experimentation ground.
+- **Status**: Scaffold phase — basic project skeleton established, awaiting feature tasks.
 
-## 技术架构
+## 2. Core Objectives
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- ✅ Establish a standardized AI Agent collaboration workflow (demand → spec → plan → task → develop → review)
+- ✅ Provide a flexible tech sandbox for rapid prototyping with Python/FastAPI
+- ✅ Accumulate reusable templates, conventions, and best-practice documents
+- ✅ Validate end-to-end agent workflow across branch management, coding, and review phases
+- ❌ Not aiming for production-grade availability, monitoring, or multi-region deployment
+- ❌ Not targeting end-user products or public-facing services
 
-## 基础契约
+## 3. Technical Architecture
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+- **Architecture Style**: Modular RESTful API (serves as the primary backend prototype)
+- **Tech Stack**:
+  - Language: Python 3.10+
+  - Web Framework: FastAPI (async-first)
+  - Data Validation: Pydantic v2
+  - Database: SQLite (dev) / PostgreSQL (production-ready via SQLAlchemy)
+  - Testing: pytest + httpx (async test client)
+  - Code Quality: Ruff (linter + formatter), mypy (type checking)
+- **Projected Module Layout**:
+  - `src/core/` — Core business logic
+  - `src/api/` — API route definitions
+  - `src/models/` — Pydantic/schema models
+  - `src/services/` — Business service layer
+  - `src/utils/` — Utility functions
+  - `tests/` — Unit + integration tests
+- **Communication**: REST over HTTP/1.1, JSON request/response bodies
+- **Current State**: No application code yet — only requirements, license, and documentation
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### Dependency Summary (requirements.txt)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| fastapi | >=0.104.0 | Web framework |
+| uvicorn[standard] | >=0.24.0 | ASGI server |
+| pydantic | >=2.5.0 | Data validation |
+
+### Dev Dependencies (requirements-dev.txt)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| pytest | >=7.4.0 | Test runner |
+| pytest-cov | >=4.1.0 | Coverage reporting |
+| ruff | >=0.1.0 | Linter + formatter |
+| httpx | >=0.25.0 | HTTP test client |
+
+## 4. Base Contract
+
+### Data Conventions
+- **API Format**: All request/response bodies use JSON (Content-Type: `application/json`)
+- **Error Response**: HTTP error responses follow RFC 7807 Problem Details (or a simplified uniform schema: `{ "detail": "<error message>", "code": "<error_code>" }`)
+- **ID Format**: UUID v4 strings for resource identifiers
+- **Timestamps**: ISO 8601 strings in UTC (e.g., `"2026-07-18T07:48:00Z"`)
+
+### Code Conventions
+- **Style**: PEP 8 enforced via Ruff
+- **Naming**:
+  - Classes: `PascalCase`
+  - Functions/methods: `snake_case`
+  - Variables: `snake_case`
+  - Constants: `UPPER_SNAKE_CASE`
+  - Private members: `_prefix`
+- **Typing**: All function parameters and return values MUST have type annotations
+- **Imports**: Grouped as stdlib → third-party → local; sorted via Ruff
+
+### Prohibited Behaviors
+- ❌ No `eval()`, `exec()`, or `__import__()` dynamic code execution
+- ❌ No hardcoded secrets or tokens in source code
+- ❌ No direct `os.system()` or `subprocess(shell=True)` without sanitization
+- ❌ No modification of files outside the project working directory
+
+## 5. Agent Division
+
+| Role | Responsibility | Input | Output |
+|------|---------------|-------|--------|
+| **Host** | Channel host; sends welcome/status broadcasts | User messages | Group chat messages |
+| **Manager** | Requirements analysis, solution design, contract drafting | User requirements + Spec | Plan + Contract documents |
+| **Developer** | Feature implementation, code commits | Task descriptions (Plan) | Code changes + git commits |
+| **Reviewer** | Code review, AC verification, quality gate | Code files + source manifest | Review report |
+
+## 6. Running & Dependencies
+
+### Prerequisites
+- Python 3.10+
+- Git 2.x
+
+### Setup
+
+```bash
+# Clone
+git clone https://github.com/sensee-arch/test-repo.git
+cd test-repo
+
+# Virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
-## Agent 划分
+### Run Development Server
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Run Tests
+```bash
+pytest tests/ -v --cov=src
+```
 
-## 运行与依赖
+### Run Linter
+```bash
+ruff check src/ tests/
+ruff format src/ tests/ --check
+```
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite:///./dev.db` | Database connection string |
 
-## 协作规则
+## 7. Collaboration Rules
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### Workflow Order
+```
+需求描述 → [Manager] /spec → [Manager] /plan → [Developer] code → [Reviewer] review → merge
+```
+No implementation may begin before Spec, Plan, and Contract are documented.
 
-## 演进原则
+### Branch Strategy
+- `main` — Stable branch, always deployable or ready for next feature
+- `flyinghub-YYYYMMDDHHmmss` — Feature/development branches for each FlyingHub session
+- Feature branches are short-lived; merge to `main` after review
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### Commit Convention
+```
+<type>: <short description>
+
+[optional body]
+```
+Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`
+
+### Logging
+- All agent operations are recorded via `action_trace` (Base64-encoded Markdown with sections: Reasoning → Decision → Action → Observation → Reflection)
+- Status is reported via `content` and `status` fields in structured outputs
+
+### Context Isolation
+- Each FlyingHub session maintains its own branch and documentation independently
+- No cross-Hub state sharing or assumption of historical memory
+
+## 8. Evolution Principles
+
+- **Contract-first**: New features MUST complete Spec → Plan → Contract documentation before any code is written
+- **Module boundaries**: New capabilities preferred via new modules/directories rather than modifying existing module boundaries
+- **ADR location**: `docs/adr/` — Architecture Decision Records stored as numbered markdown files
+- **Simplicity first**: No over-engineering; "good enough" for validation beats "perfect" that ships late
+- **Testing mandatory**: Core logic must be testable; new features must include corresponding tests
+- **Self-documenting**: Code changes should be accompanied by documentation updates in `.ai/` or `docs/`
+- **Retrospective**: After each feature cycle, update this constitution if patterns or conventions have evolved
