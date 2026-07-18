@@ -308,6 +308,35 @@ body {
   font-size: 0.95rem;
 }
 
+/* ===== Keyboard Shortcuts Hint ===== */
+.kb-hints {
+  margin-top: 16px;
+  padding-top: 12px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+  opacity: 0.6;
+  transition: opacity var(--transition);
+}
+
+.kb-hints:hover {
+  opacity: 1;
+}
+
+.kb-hints kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
   body {

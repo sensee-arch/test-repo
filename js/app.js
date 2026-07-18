@@ -8,6 +8,7 @@
 
   // ===== Constants =====
   var STORAGE_KEY = 'todolist_tasks';
+  var FILTER_STORAGE_KEY = 'todolist_filter';
   var Filters = {
     ALL: 'all',
     ACTIVE: 'active',
@@ -53,6 +54,22 @@
     } catch (e) {
       console.warn('TodoList: Failed to write to localStorage', e);
     }
+  }
+
+  function getSavedFilter() {
+    try {
+      var saved = localStorage.getItem(FILTER_STORAGE_KEY);
+      if (saved && [Filters.ALL, Filters.ACTIVE, Filters.COMPLETED].indexOf(saved) !== -1) {
+        return saved;
+      }
+    } catch (e) { /* ignore */ }
+    return Filters.ALL;
+  }
+
+  function saveFilter(filter) {
+    try {
+      localStorage.setItem(FILTER_STORAGE_KEY, filter);
+    } catch (e) { /* ignore */ }
   }
 
   // ===== Task CRUD =====
@@ -188,10 +205,17 @@
   }
 
   function renderFooter() {
-    var count = getActiveCount();
-    dom.count.textContent = count + ' item' + (count !== 1 ? 's' : '') + ' left';
+    var activeCount = getActiveCount();
+    var completedCount = tasks.length - activeCount;
+    var totalCount = tasks.length;
 
-    var completedCount = tasks.length - getActiveCount();
+    // Show "3 of 5 completed" when there are completed items, else "5 items left"
+    if (completedCount > 0) {
+      dom.count.textContent = activeCount + ' active, ' + completedCount + ' of ' + totalCount + ' completed';
+    } else {
+      dom.count.textContent = totalCount + ' item' + (totalCount !== 1 ? 's' : '') + ' left';
+    }
+
     dom.clearBtn.disabled = completedCount === 0;
   }
 
@@ -262,6 +286,7 @@
     btn.classList.add('active');
     btn.setAttribute('aria-selected', 'true');
     currentFilter = filter;
+    saveFilter(filter);
     render();
   }
 
@@ -269,9 +294,44 @@
     clearCompleted();
   }
 
+  // ===== Keyboard Shortcuts =====
+  function onGlobalKeydown(e) {
+    // Ctrl+N or Ctrl+Shift+N: Focus the input
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
+      e.preventDefault();
+      dom.input.focus();
+      dom.input.select();
+      return;
+    }
+    // Ctrl+Shift+C: Clear completed
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+      e.preventDefault();
+      clearCompleted();
+      return;
+    }
+    // Ctrl+A: Focus input from empty state
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement !== dom.input) {
+      e.preventDefault();
+      dom.input.focus();
+    }
+  }
+
+  function setActiveFilterButton(filter) {
+    dom.filterBtns().forEach(function (b) {
+      var isActive = b.dataset.filter === filter;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  }
+
   // ===== Init =====
   function init() {
+    currentFilter = getSavedFilter();
     tasks = getAllTasks();
+
+    // Sync the filter button UI before render
+    setActiveFilterButton(currentFilter);
+
     render();
 
     // Bind events
@@ -282,6 +342,9 @@
     });
 
     dom.clearBtn.addEventListener('click', onClearCompleted);
+
+    // Global keyboard shortcuts
+    document.addEventListener('keydown', onGlobalKeydown);
   }
 
   // Boot
