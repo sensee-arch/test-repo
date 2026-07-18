@@ -1,73 +1,137 @@
 # .ai/about.md — AI Agent Project Constitution
 
-## 项目概述
+## Project Overview
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **Project**: test-repo — an experimental AI Agent collaborative programming testbed
+- **Repository**: https://github.com/sensee-arch/test-repo
+- **Tech Stack**: Python 3.10+ / FastAPI / Pydantic / SQLite
+- **License**: MIT
+- **Purpose**: Validate and exercise multi-Agent collaborative development workflows (spec → plan → contract → coding → review), establish standardized AI project collaboration processes, and explore reusable templates and conventions.
 
-## 核心目标
+## Core Objectives
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ✅ Establish end-to-end Agent collaboration workflow: requirements analysis → spec → plan → task assignment → coding → code review → merge
+- ✅ Standardize Agent communication protocols, document templates, and output formats
+- ✅ Provide a flexible playground for rapid prototyping and technical validation
+- ✅ Build reusable Spec, Plan, Contract, and Review templates
+- ✅ Record and consolidate practical experience in AI-assisted development
+- ❌ Not a production service — no deployment, no user-facing SLA
+- ❌ Not a monolithic application — modular, extensible, composable
 
-## 技术架构
+## Technical Architecture
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **Architecture Style**: Modular monolith evolving toward service-oriented; RESTful API backend + file-based documentation layer
+- **Core Components**:
+  - `src/api/` — FastAPI route handlers (REST endpoints)
+  - `src/models/` — Pydantic data models (request/response schemas, DB models)
+  - `src/core/` — Business logic (service layer)
+  - `src/services/` — External integration services (GitHub, etc.)
+  - `src/utils/` — Utility functions (logging, encoding, validation)
+  - `tests/` — pytest test suite (unit + integration)
+  - `docs/adr/` — Architecture Decision Records
+  - `.ai/` — AI Agent workspace (about.md, specs, plans, contracts)
+- **Communication**: REST over HTTP (JSON request/response); agent-to-agent via file-based handoff (`.ai/` directory)
+- **Data Flow**: User Input → Agent Manager (Spec/Plan) → Agent Developer (Code) → Agent Reviewer (Review) → Git Commit
+- **Persistence**: SQLite for development; PostgreSQL-ready for production
 
-## 基础契约
+## Base Contract
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+### Data Contracts
+- All API request/response bodies use Pydantic v2 models for validation
+- Error responses follow a consistent JSON envelope: `{"detail": "<message>", "code": "<error_code>"}`
+- Paginated responses include `items`, `total`, `page`, `page_size`
+- Timestamps are ISO-8601 strings in UTC
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
+### Git Conventions
+- Branch format: `flyinghub-YYYYMMDDHHmmss` for feature work from FlyingHub triggers
+- Commit message format: `<type>: <description>` where type ∈ `feat|fix|docs|refactor|test|chore|style`
+- `main` branch is always deployable; feature branches merge via PR
+
+### File Conventions
+- Source code root: `src/`
+- Test mirror: `tests/` mirrors `src/` structure — `tests/api/`, `tests/core/`, etc.
+- Agent work products: `.ai/`
+- Architecture decisions: `docs/adr/`
+- ReasonML/design decisions captured in `docs/adr/ADR-*.md`
+
+### Quality Gates
+- All new code must have corresponding unit tests
+- `ruff` linting must pass before merge
+- Coverage ≥ 80% for core modules
+- No `print()` in production code — use `logging`
+
+## Agent Division
+
+| Agent | Responsibility | Input Source | Output Destination |
+|-------|---------------|--------------|-------------------|
+| Boot | Project initialization, git operations, environment setup | User command / FlyingHub trigger | Chat status + workspace files |
+| Manager | Requirements analysis, spec writing, plan decomposition, contract definition | User needs + Spec template | `.ai/spec.md`, `.ai/plan.md`, `.ai/contract.md` |
+| Developer | Implementation per task, code submission within feature branch | `.ai/task-NNN.md` | Code files + git commits |
+| Reviewer | Code review, AC validation, test coverage check | Code diff + `.ai/contract.md` | Review report in `.ai/review.md` |
+| Host | Chat coordination, status broadcast, gateway to human | Event triggers | Chat messages |
+
+## Running & Dependencies
+
+### Runtime Environment
+- Python 3.10+ (venv at `.venv/`)
+- Dependencies defined in `requirements.txt` and `requirements-dev.txt`
+
+### Quick Start
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+# Start dev server
+uvicorn src.main:app --reload --port 8000
 ```
 
-## Agent 划分
+### Testing
+```bash
+pytest --cov=src --cov-report=term-missing
+```
 
-| 名称 | 职责 | 输入来源 | 输出去向 |
-|------|------|----------|----------|
-| Host | 群聊主持人，发送欢迎/状态广播 | 用户 | 群聊 |
-| Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
-| Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
-| Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+### Linting
+```bash
+ruff check src/
+```
 
-## 运行与依赖
+### Key Dependencies
+- **fastapi>=0.104.0** — HTTP framework
+- **uvicorn[standard]>=0.24.0** — ASGI server
+- **pydantic>=2.5.0** — Data validation
+- **pytest>=7.4.0** — Testing framework
+- **ruff>=0.1.0** — Python linter
+- **httpx>=0.25.0** — HTTP client (testing)
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+## Collaboration Rules
 
-## 协作规则
+### Workflow
+```
+User request → [Boot: setup] → [Manager: spec → plan → contract]
+→ [Developer: code → commit → push] → [Reviewer: review] → Merge → [Boot: report]
+```
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### Logging & Tracing
+- All Agent actions must produce an `action_trace` (base64-encoded Markdown with Reasoning/Decision/Action/Observation/Reflection)
+- Key decisions recorded as ADRs in `docs/adr/`
+- Agent output files stored in `.ai/` per session
 
-## 演进原则
+### Handoff Protocol
+- Each Agent writes its output to a well-known path before notifying the next Agent
+- Outputs include: `status` (done/failed), `content` (human-readable brief), `action_trace` (machine-readable trace)
+- Agents do NOT rely on session memory — all state passes through files
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+### Prohibited Behaviors
+- No hardcoded tokens, secrets, or credentials in code
+- No `eval()`, `exec()`, or dynamic code generation
+- No modifications outside the designated workspace (`../` path traversal)
+- No silent fallbacks without logging
+
+## Evolution Principles
+
+1. **Contract-first**: Every feature starts with Spec → Plan → Contract documentation before any code
+2. **Modularity over monolith**: New capabilities are added as new modules first, not by expanding existing ones
+3. **Documentation as code**: `.ai/about.md` (this file), `ARCH.md`, and ADRs live alongside source code and must be kept in sync
+4. **Incremental improvement**: Prefer small, testable, mergable increments over large rewrites
+5. **Retrospective capture**: After each milestone, update `.ai/about.md` and relevant ADRs with lessons learned
+6. **No assumption of history**: Each session starts fresh — all context must be in files, not in model memory
