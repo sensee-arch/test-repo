@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A simple, lightweight TodoList web application built with vanilla HTML/CSS/JavaScript and localStorage persistence.">
+  <meta name="theme-color" content="#4a90d9">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <main class="todo-container">
+    <header class="todo-header">
+      <h1>📋 TodoList</h1>
+      <p>记录你的待办事项，保持高效</p>
+    </header>
+
+    <!-- Add Task Form -->
+    <form id="addTaskForm" class="add-task-form" autocomplete="off">
+      <label for="taskInput" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">新待办事项</label>
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="输入新待办事项..."
+        maxlength="200"
+        required
+        autofocus
+      >
+      <button type="submit" aria-label="Add task">添加</button>
+    </form>
+
+    <!-- Filter Bar -->
+    <nav class="filter-bar" role="tablist" aria-label="Task filter">
+      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">全部</button>
+      <button class="filter-btn" data-filter="active" role="tab" aria-selected="false">活跃</button>
+      <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">已完成</button>
+    </nav>
+
+    <!-- Task Counter -->
+    <div id="taskCounter" class="task-counter" aria-live="polite"></div>
+
+    <!-- Task List -->
+    <ul id="taskList" class="task-list" role="list" aria-label="Task list"></ul>
+
+    <!-- Clear Completed -->
+    <div class="clear-completed-bar">
+      <button id="clearCompletedBtn" class="clear-completed-btn" disabled aria-label="Clear all completed tasks">
+        清除已完成
+      </button>
+    </div>
+
+    <footer class="todo-footer">
+      <small>数据存储在浏览器本地 · <span id="storageKeyHint">localStorage</span></small>
+    </footer>
+  </main>
+
+  <script src="js/app.js"></script>
+
+</body>
+</html>
