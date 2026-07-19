@@ -1,49 +1,57 @@
-# .ai/about.md — AI Agent Project Constitution
+# .ai/about.md — AI Agent 项目宪法
 
-## 项目概述
+## 1. 项目概述
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **项目名**: test-repo
+- **定位**: AI Agent 协作编程的实验与验证项目 — 作为多 Agent 协作工作流的试验场
+- **仓库**: `https://github.com/sensee-arch/test-repo`
+- **解决的问题**: 验证和沉淀 AI Agent 协作编程的标准化流程（需求→方案→任务→开发→审核）
+- **当前状态**: 基础骨架已搭建，等待编码功能实现
+- **不涉及**: 生产部署、用户认证、多端同步、真实业务场景
 
-## 核心目标
+## 2. 核心目标
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
-- ❌ 不追求后端同步或多端协同
-- ❌ 不追求 PWA/离线能力或推送通知
+- ✅ 演练 AI Agent 协作编程全流程（需求/方案/任务/开发/评审/合并）
+- ✅ 建立标准化的 AI 项目协作模板和规范文档
+- ✅ 探索可复用的 Agent 协作模式，沉淀实践经验
+- ❌ 不追求高性能、高可用或真实用户级体验
+- ❌ 不涉及跨项目共享状态或 Agent 记忆持久化
 
-## 技术架构
+## 3. 技术架构
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+- **架构风格**: 待定（预留 Python FastAPI 技术栈）
+- **推荐技术栈**:
+  - 语言: Python 3.11+
+  - Web 框架: FastAPI ≥ 0.104.0 + uvicorn
+  - 数据模型: Pydantic ≥ 2.5.0
+  - 数据库: SQLite（开发）/ PostgreSQL（生产）
+  - 测试: pytest + pytest-cov
+  - 代码检查: ruff ≥ 0.1.0
+- **通信方式**: RESTful API（规划中）
+- **环境**: 本地开发无需 Docker，Python venv 即可
 
-## 基础契约
+## 4. 基础契约
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+- **目录结构**:
+  ```
+  test-repo/
+  ├── .ai/              # AI Agent 项目宪法
+  ├── src/              # 源代码（待创建）
+  │   ├── core/        # 核心业务逻辑
+  │   ├── api/         # API 接口层
+  │   ├── models/      # 数据模型
+  │   ├── services/    # 服务层
+  │   └── utils/       # 工具函数
+  ├── tests/           # 测试代码
+  ├── docs/            # 文档
+  ├── scripts/         # 辅助脚本
+  ```
+- **命名规范**: 类名 `PascalCase`、函数/变量 `snake_case`、常量 `UPPER_SNAKE_CASE`
+- **Git 提交规范**: `<type>: <描述>`（feat/fix/docs/refactor/test/chore/style）
+- **分支策略**: `main` 为稳定分支，开发分支命名 `YYYYMMDDHH-<descriptive-name>` 或 `flyinghub-<timestamp>`
+- **禁止行为**: 禁止未经验证的跨分支合并、禁止直接推送 main、禁止删除远程分支而不确认
 
-### JSON 示例
-```json
-{
-  "id": "m3xq8f2k1a",
-  "title": "Buy groceries",
-  "completed": false,
-  "createdAt": 1720000000000
-}
-```
-
-## Agent 划分
+## 5. Agent 划分
 
 | 名称 | 职责 | 输入来源 | 输出去向 |
 |------|------|----------|----------|
@@ -52,22 +60,31 @@
 | Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
 | Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
 
-## 运行与依赖
+## 6. 运行与依赖
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+- **Python**: 3.11+
+- **依赖安装**:
+  ```bash
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements.txt
+  pip install -r requirements-dev.txt
+  ```
+- **开发工具**: 文本编辑器 + Git 客户端，无需 Docker/Node.js
+- **CI**: GitHub Actions（待配置）
 
-## 协作规则
+## 7. 协作规则
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+- **契约优先**: 编码前必须先完成 Spec → Plan → Contract 文档
+- **日志规范**: 通过 `action_trace`（Base64 编码 Markdown）记录操作步骤和错误
+- **上下文隔离**: 每个 FlyingHub Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
+- **审核门槛**: 所有 PR 应有清晰变更描述，关键逻辑变更需至少一个 Agent 审核
+- **自动修复优先**: 遇错先自行重试修复，仅 OS 级权限、认证鉴权、资源缺失等问题上报
 
-## 演进原则
+## 8. 演进原则
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+- **简单优先**: 不做过度设计，够用就好
+- **契约先于实现**: 任何新功能必须先完成 Spec 和 Contract 再编码
+- **可替换性**: 组件间通过接口解耦，便于替换
+- **测试驱动**: 核心逻辑必须可测试，覆盖率不低于 80%
+- **ADR**: 架构决策记录存于 `docs/adr/` 目录（待创建）
