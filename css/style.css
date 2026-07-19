@@ -1,0 +1,425 @@
+/* css/style.css — Responsive Styles & Theme */
+
+/* ── Design Tokens ───────────────────────────────────────────── */
+
+:root {
+  --color-bg: #f5f5f5;
+  --color-surface: #fff;
+  --color-text: #333;
+  --color-text-secondary: #777;
+  --color-primary: #5c7cfa;
+  --color-primary-hover: #4c6ef5;
+  --color-border: #e0e0e0;
+  --color-border-focus: #5c7cfa;
+  --color-completed: #d3d3d3;
+  --color-delete: #ff6b6b;
+  --color-delete-hover: #f03e3e;
+  --color-error-bg: #fff5f5;
+  --color-error-text: #c92a2a;
+  --color-error-border: #ffc9c9;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --max-width: 540px;
+}
+
+/* ── Dark Mode ───────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-text: #e0e0e0;
+    --color-text-secondary: #a0a0a0;
+    --color-primary: #748ffc;
+    --color-primary-hover: #91a7ff;
+    --color-border: #2a2a4a;
+    --color-border-focus: #748ffc;
+    --color-completed: #586080;
+    --color-delete: #ff6b6b;
+    --color-delete-hover: #ff8787;
+    --color-error-bg: #2a1a1a;
+    --color-error-text: #ff8787;
+    --color-error-border: #4a2a2a;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ── High Contrast ───────────────────────────────────────────── */
+
+@media (prefers-contrast: high) {
+  :root {
+    --color-bg: #000;
+    --color-surface: #111;
+    --color-text: #fff;
+    --color-text-secondary: #ccc;
+    --color-border: #666;
+    --color-primary: #8ab4f8;
+    --color-primary-hover: #a9c9ff;
+    --color-completed: #666;
+    --color-delete: #ff8888;
+    --color-error-bg: #300;
+    --color-error-text: #ffaaaa;
+    --color-error-border: #800;
+  }
+}
+
+/* ── Reset & Base ────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ── Utilities ───────────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ── App Container ───────────────────────────────────────────── */
+
+#app {
+  width: 100%;
+  max-width: var(--max-width);
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+
+.todo-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.todo-title {
+  font-size: 4rem;
+  font-weight: 100;
+  color: var(--color-primary);
+  letter-spacing: -2px;
+  line-height: 1.1;
+}
+
+.todo-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Main Card ────────────────────────────────────────────────── */
+
+.todo-main {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* ── Form / Input ────────────────────────────────────────────── */
+
+.todo-form {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.todo-input {
+  flex: 1;
+  border: none;
+  padding: 1rem;
+  font-size: 1.125rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
+}
+
+.todo-input::placeholder {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.todo-input:focus {
+  box-shadow: inset 0 -2px 0 var(--color-border-focus);
+}
+
+.todo-add-btn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 0 1.25rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todo-add-btn:hover {
+  background: var(--color-primary-hover);
+}
+
+.todo-add-btn:focus-visible {
+  outline: 2px solid var(--color-primary-hover);
+  outline-offset: -2px;
+}
+
+/* ── Error ───────────────────────────────────────────────────── */
+
+.todo-error {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
+  border-top: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* ── List ────────────────────────────────────────────────────── */
+
+.todo-list-container {
+  min-height: 80px;
+}
+
+.todo-list {
+  list-style: none;
+}
+
+.todo-list.hidden,
+.todo-empty.hidden {
+  display: none;
+}
+
+.todo-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ── Item ────────────────────────────────────────────────────── */
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.2s ease;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-item:hover {
+  background: rgba(92, 124, 250, 0.04);
+}
+
+.todo-item.completed .todo-label {
+  text-decoration: line-through;
+  color: var(--color-completed);
+}
+
+/* ── Checkbox ────────────────────────────────────────────────── */
+
+.todo-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ── Label / Edit ─────────────────────────────────────────────── */
+
+.todo-label {
+  flex: 1;
+  font-size: 1rem;
+  line-height: 1.4;
+  cursor: default;
+  padding: 0.125rem 0;
+  user-select: none;
+  word-break: break-word;
+}
+
+.todo-edit-input {
+  flex: 1;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  outline: none;
+}
+
+/* ── Delete Button ───────────────────────────────────────────── */
+
+.todo-delete-btn {
+  background: none;
+  border: none;
+  color: var(--color-delete);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.todo-item:hover .todo-delete-btn {
+  opacity: 1;
+}
+
+.todo-delete-btn:hover {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.todo-delete-btn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-delete);
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+
+.todo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.todo-count {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.todo-filters {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filter-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: rgba(92, 124, 250, 0.3);
+}
+
+.filter-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.filter-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.todo-clear-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--color-delete);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.todo-clear-btn:hover {
+  border-color: var(--color-delete);
+}
+
+.todo-clear-btn:focus-visible {
+  outline: 2px solid var(--color-delete);
+  outline-offset: 1px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+
+  .todo-title {
+    font-size: 2.5rem;
+  }
+
+  .todo-footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .todo-filters {
+    justify-content: center;
+  }
+
+  .todo-input {
+    font-size: 1rem;
+  }
+
+  .todo-delete-btn {
+    opacity: 1;
+  }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
