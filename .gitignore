@@ -1,0 +1,9 @@
+# Generated files
+output.json
+task_output.json
+.coverage
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+node_modules/
