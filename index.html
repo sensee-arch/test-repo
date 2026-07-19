@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A minimalist ToDo List web application built with vanilla HTML, CSS, and JavaScript." />
+  <title>ToDo List</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main id="todo-app" role="application" aria-label="ToDo List Application">
+    <h1 class="app-title">ToDo List</h1>
+
+    <!-- Add New Todo -->
+    <form id="new-todo-form" aria-label="Add a new task">
+      <label for="new-todo-input" class="sr-only">New task description</label>
+      <input
+        id="new-todo-input"
+        type="text"
+        placeholder="What needs to be done?"
+        maxlength="500"
+        autocomplete="off"
+        required
+      />
+      <button id="new-todo-submit" type="submit">Add</button>
+    </form>
+
+    <!-- Storage Warning -->
+    <div id="storage-warning" role="alert" aria-live="polite">
+      ⚠️ localStorage is unavailable. Data will not persist across sessions.
+    </div>
+
+    <!-- Controls -->
+    <div class="controls" role="toolbar" aria-label="Filter and sort controls">
+      <div class="filter-group" role="group" aria-label="Filter tasks">
+        <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-btn" data-filter="active" aria-pressed="false">Active</button>
+        <button class="filter-btn" data-filter="completed" aria-pressed="false">Completed</button>
+      </div>
+      <label for="sort-select" class="sr-only">Sort by</label>
+      <select id="sort-select" aria-label="Sort tasks">
+        <option value="created">Created (newest)</option>
+        <option value="title">Title (A-Z)</option>
+      </select>
+    </div>
+
+    <!-- Todo List -->
+    <ul id="todo-list" role="list" aria-label="Task list">
+      <!-- Rendered by JavaScript -->
+    </ul>
+
+    <!-- Empty State -->
+    <div id="empty-state" role="status">
+      <span aria-hidden="true">📋</span>
+      <p>No tasks yet. Add one above!</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="todo-footer">
+      <span id="todo-count" role="status">0 items left</span>
+      <button id="clear-completed-btn" type="button" title="Remove all completed tasks">Clear completed</button>
+    </div>
+  </main>
+
+  <!-- Scripts (order matters: Model → View → Controller) -->
+  <script src="js/model.js"></script>
+  <script src="js/view.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
