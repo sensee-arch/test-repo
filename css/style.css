@@ -1,0 +1,519 @@
+/* ===========================================
+   ToDo List — 样式表 (css/style.css)
+   响应式布局 · 暗色模式 · WCAG 2.1 AA
+   =========================================== */
+
+/* ---- CSS Custom Properties ---- */
+:root {
+  --color-bg: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-text: #212529;
+  --color-text-secondary: #6c757d;
+  --color-border: #dee2e6;
+  --color-primary: #4361ee;
+  --color-primary-hover: #3a56d4;
+  --color-primary-focus: rgba(67, 97, 238, 0.2);
+  --color-danger: #e63946;
+  --color-success: #2ec4b6;
+  --color-warning: #ff9f1c;
+  --color-high: #e63946;
+  --color-medium: #ff9f1c;
+  --color-low: #2ec4b6;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --transition-fast: 0.15s ease;
+  --transition: 0.25s ease;
+  --focus-ring: 2px solid var(--color-primary);
+}
+
+/* ---- High Contrast Mode ---- */
+@media (prefers-contrast: high) {
+  :root {
+    --color-bg: #000000;
+    --color-surface: #111111;
+    --color-text: #ffffff;
+    --color-text-secondary: #cccccc;
+    --color-border: #ffffff;
+    --color-primary: #7799ff;
+    --color-primary-hover: #5588ff;
+    --color-danger: #ff4444;
+    --color-success: #44ddcc;
+    --color-warning: #ffbb33;
+  }
+}
+
+/* ---- Dark Mode (system) ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #121212;
+    --color-surface: #1e1e1e;
+    --color-text: #e0e0e0;
+    --color-text-secondary: #a0a0a0;
+    --color-border: #333333;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- Base ---- */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ---- Focus (WCAG 2.1 AA) ---- */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---- Header ---- */
+header {
+  text-align: center;
+  padding: 2.5rem 1rem 1rem;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* ---- Main Layout ---- */
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 1rem 4rem;
+}
+
+/* ---- Form Section ---- */
+.todo-form {
+  margin-bottom: 1.25rem;
+}
+
+#todo-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#todo-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast);
+}
+
+#todo-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+#todo-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-focus);
+}
+
+#todo-priority {
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+#todo-priority:focus {
+  border-color: var(--color-primary);
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform 0.1s, box-shadow var(--transition-fast);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+#todo-form button[type="submit"] {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+#todo-form button[type="submit"]:hover {
+  background: var(--color-primary-hover);
+  box-shadow: 0 2px 6px rgba(67, 97, 238, 0.3);
+}
+
+/* ---- Controls ---- */
+.todo-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-group {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filter-btn {
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.filter-btn:hover {
+  background: var(--color-primary-focus);
+  color: var(--color-primary);
+}
+
+.filter-btn.active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+#sort-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+#sort-select:focus {
+  border-color: var(--color-primary);
+}
+
+/* ---- Stats ---- */
+.todo-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+/* ---- List Container ---- */
+.todo-list-container {
+  min-height: 100px;
+}
+
+#todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#todo-list.hidden {
+  display: none;
+}
+
+/* ---- Todo Item ---- */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: opacity var(--transition), transform var(--transition), border-color var(--transition);
+}
+
+.todo-item:hover {
+  border-color: var(--color-primary);
+}
+
+.todo-item.completed {
+  opacity: 0.6;
+}
+
+.todo-item.completed .todo-title {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+
+.todo-checkbox {
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  accent-color: var(--color-success);
+}
+
+.todo-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* ---- Priority Badge ---- */
+.todo-priority {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.todo-priority.high {
+  background: rgba(230, 57, 70, 0.12);
+  color: var(--color-high);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+}
+
+.todo-priority.medium {
+  background: rgba(255, 159, 28, 0.12);
+  color: var(--color-medium);
+  border: 1px solid rgba(255, 159, 28, 0.25);
+}
+
+.todo-priority.low {
+  background: rgba(46, 196, 182, 0.12);
+  color: var(--color-low);
+  border: 1px solid rgba(46, 196, 182, 0.25);
+}
+
+/* ---- Timestamp ---- */
+.todo-time {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ---- Delete Button ---- */
+.todo-delete {
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 0.2rem 0.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  opacity: 0.4;
+  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.todo-delete:hover {
+  opacity: 1;
+  color: var(--color-danger);
+  background: rgba(230, 57, 70, 0.08);
+}
+
+.todo-delete:active {
+  transform: scale(0.9);
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+}
+
+.empty-state p:first-child {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state.hidden {
+  display: none;
+}
+
+/* ---- Batch Actions ---- */
+.todo-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--color-border);
+  border-color: var(--color-text-secondary);
+}
+
+/* ---- Animations ---- */
+.todo-item.removing {
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+}
+
+.todo-item.adding {
+  animation: slideIn 0.25s ease-out both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Responsive (Mobile) ---- */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  header {
+    padding-top: 1.5rem;
+  }
+
+  #todo-form {
+    flex-direction: column;
+  }
+
+  #todo-input {
+    min-width: 100%;
+  }
+
+  .todo-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    justify-content: center;
+  }
+
+  .sort-group {
+    justify-content: center;
+  }
+
+  .todo-item {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .todo-time {
+    width: 100%;
+    text-align: right;
+    font-size: 0.7rem;
+  }
+
+  .todo-actions {
+    flex-direction: column;
+  }
+
+  .btn-secondary {
+    width: 100%;
+  }
+}
+
+/* ---- Print Styles ---- */
+@media print {
+  .todo-form,
+  .todo-controls,
+  .todo-actions,
+  .todo-delete {
+    display: none !important;
+  }
+
+  .todo-item {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
