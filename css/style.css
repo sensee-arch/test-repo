@@ -1,0 +1,558 @@
+/* =============================================================
+   ToDo List — Styles
+   Tech: CSS3 Flexbox + Grid, responsive, dark mode, WCAG AA
+   ============================================================= */
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-primary: #5a6acf;
+  --color-primary-hover: #4a5abf;
+  --color-text: #2c3e50;
+  --color-text-secondary: #6b7c93;
+  --color-border: #e2e6ed;
+  --color-border-focus: #5a6acf;
+  --color-danger: #e74c5c;
+  --color-danger-hover: #c0392b;
+  --color-success: #27ae60;
+  --color-completed: #b0b8c4;
+  --color-filter-active: #5a6acf;
+  --color-filter-bg-hover: #edf0ff;
+  --color-danger-bg-hover: #ffeaea;
+  --color-success-bg-hover: #e6f9ef;
+  --color-shadow: rgba(0, 0, 0, 0.08);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  padding: 48px 16px;
+  min-height: 100vh;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+/* ---------- Screen-reader only ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ---------- App Container ---------- */
+#todo-app {
+  width: 100%;
+  max-width: 540px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: 0 2px 16px var(--color-shadow);
+  height: fit-content;
+  transition: background var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.app-title {
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 20px;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+/* ---------- Add Form ---------- */
+#new-todo-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+#new-todo-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+#new-todo-input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(90, 106, 207, 0.15);
+}
+
+#new-todo-submit {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform 0.1s;
+  white-space: nowrap;
+}
+
+#new-todo-submit:hover {
+  background: var(--color-primary-hover);
+}
+
+#new-todo-submit:active {
+  transform: scale(0.96);
+}
+
+#new-todo-submit:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Controls Bar ---------- */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.filter-btn:hover {
+  color: var(--color-filter-active);
+  background: var(--color-filter-bg-hover);
+}
+
+.filter-btn.active {
+  color: #fff;
+  background: var(--color-filter-active);
+  border-color: var(--color-filter-active);
+  font-weight: 600;
+}
+
+.filter-btn:focus-visible {
+  outline: 3px solid var(--color-filter-active);
+  outline-offset: 2px;
+}
+
+#sort-select {
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+#sort-select:focus {
+  border-color: var(--color-border-focus);
+}
+
+/* ---------- Todo List ---------- */
+#todo-list {
+  list-style: none;
+  min-height: 60px;
+}
+
+/* ---------- Todo Item ---------- */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--color-border);
+  animation: todoFadeIn 0.2s ease;
+  transition: background var(--transition-fast);
+}
+
+.todo-item:hover {
+  background: rgba(90, 106, 207, 0.03);
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes todoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Custom Checkbox ---------- */
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    transform 0.1s;
+}
+
+.todo-checkbox:hover {
+  border-color: var(--color-filter-active);
+  background: var(--color-filter-bg-hover);
+}
+
+.todo-checkbox:active {
+  transform: scale(0.9);
+}
+
+.todo-checkbox.completed {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.todo-checkbox.completed::after {
+  content: "✓";
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- Task Title ---------- */
+.todo-title {
+  flex: 1;
+  font-size: 15px;
+  color: var(--color-text);
+  word-break: break-word;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color var(--transition-fast);
+  user-select: none;
+}
+
+.todo-title.completed {
+  text-decoration: line-through;
+  color: var(--color-completed);
+}
+
+/* ---------- Inline Edit ---------- */
+.todo-edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 2px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  outline: none;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px rgba(90, 106, 207, 0.12);
+}
+
+/* ---------- Task Actions ---------- */
+.todo-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.todo-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.todo-actions button:focus-visible {
+  outline: 3px solid var(--color-filter-active);
+  outline-offset: 2px;
+}
+
+.btn-edit {
+  color: var(--color-filter-active);
+}
+
+.btn-edit:hover {
+  background: var(--color-filter-bg-hover);
+}
+
+.btn-delete {
+  color: var(--color-danger);
+}
+
+.btn-delete:hover {
+  background: var(--color-danger-bg-hover);
+}
+
+.btn-save {
+  color: var(--color-success);
+}
+
+.btn-save:hover {
+  background: var(--color-success-bg-hover);
+}
+
+.btn-cancel {
+  color: var(--color-text-secondary);
+}
+
+.btn-cancel:hover {
+  background: var(--color-filter-bg-hover);
+}
+
+/* ---------- Empty State ---------- */
+#empty-state {
+  display: none;
+  text-align: center;
+  color: var(--color-completed);
+  padding: 48px 16px;
+  font-size: 15px;
+}
+
+#empty-state.visible {
+  display: block;
+}
+
+#empty-state span {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+#empty-state p {
+  margin: 0;
+}
+
+/* ---------- Footer ---------- */
+.todo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+#todo-count {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+#clear-completed-btn {
+  background: none;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+#clear-completed-btn:hover {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+#clear-completed-btn:focus-visible {
+  outline: 3px solid var(--color-danger);
+  outline-offset: 2px;
+}
+
+#clear-completed-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--color-completed);
+  color: var(--color-completed);
+}
+
+#clear-completed-btn:disabled:hover {
+  background: none;
+  color: var(--color-completed);
+}
+
+/* ---------- Storage Warning ---------- */
+#storage-warning {
+  display: none;
+  background: #fff8e0;
+  border: 1px solid #f0c040;
+  color: #7a6500;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+#storage-warning.visible {
+  display: block;
+}
+
+/* =============================================================
+   Dark Mode (prefers-color-scheme)
+   ============================================================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1b2e;
+    --color-surface: #242640;
+    --color-primary: #7b8cff;
+    --color-primary-hover: #6a7bf0;
+    --color-text: #e4e6f0;
+    --color-text-secondary: #9ba0b8;
+    --color-border: #363858;
+    --color-border-focus: #7b8cff;
+    --color-completed: #5c5f7a;
+    --color-filter-active: #7b8cff;
+    --color-filter-bg-hover: #2f3160;
+    --color-danger-bg-hover: #3d2028;
+    --color-success-bg-hover: #1a3d2a;
+    --color-shadow: rgba(0, 0, 0, 0.3);
+  }
+
+  #new-todo-input {
+    background: #1e2038;
+    color: var(--color-text);
+  }
+
+  #new-todo-input:focus {
+    box-shadow: 0 0 0 3px rgba(123, 140, 255, 0.2);
+  }
+
+  #storage-warning {
+    background: #3a3200;
+    border-color: #8a7500;
+    color: #e8d44a;
+  }
+}
+
+/* =============================================================
+   High Contrast Mode (forced-colors)
+   ============================================================= */
+@media (forced-colors: active) {
+  .filter-btn.active {
+    border: 2px solid Highlight;
+    color: HighlightText;
+    background: Highlight;
+  }
+
+  .todo-checkbox.completed::after {
+    color: CanvasText;
+  }
+
+  #new-todo-submit,
+  #clear-completed-btn {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* =============================================================
+   Responsive
+   ============================================================= */
+@media (max-width: 480px) {
+  body {
+    padding: 16px 12px;
+  }
+
+  #todo-app {
+    padding: 20px 16px;
+    border-radius: 8px;
+  }
+
+  .app-title {
+    margin-bottom: 16px;
+  }
+
+  #new-todo-form {
+    gap: 6px;
+  }
+
+  #new-todo-input {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  #new-todo-submit {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .filter-group {
+    justify-content: center;
+  }
+
+  #sort-select {
+    width: 100%;
+  }
+
+  .todo-footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .todo-item {
+    padding: 10px 2px;
+    gap: 8px;
+  }
+
+  .todo-title {
+    font-size: 14px;
+  }
+}
