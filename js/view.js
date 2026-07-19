@@ -181,6 +181,7 @@ class TodoView {
   _buildItemHTML(item) {
     const isEditing = this.editingId === item.id;
     const titleClass = item.completed ? 'todo-title completed' : 'todo-title';
+    const safeTitle = this._escapeHtml(item.title);
 
     return `
       <li class="todo-item" data-id="${item.id}" role="listitem">
@@ -188,13 +189,13 @@ class TodoView {
           type="checkbox"
           class="todo-checkbox"
           ${item.completed ? 'checked' : ''}
-          aria-label="Mark '${item.title}' as ${item.completed ? 'incomplete' : 'complete'}"
+          aria-label="Mark '${safeTitle}' as ${item.completed ? 'incomplete' : 'complete'}"
         >
         ${isEditing
-          ? `<input type="text" class="todo-edit-input" value="${this._escapeHtml(item.title)}" autofocus>`
-          : `<span class="${titleClass}">${this._escapeHtml(item.title)}</span>`
+          ? `<input type="text" class="todo-edit-input" value="${safeTitle}" autofocus>`
+          : `<span class="${titleClass}">${safeTitle}</span>`
         }
-        <button class="btn-delete" aria-label="Delete '${item.title}'">&times;</button>
+        <button class="btn-delete" aria-label="Delete '${safeTitle}'">&times;</button>
       </li>
     `;
   }
