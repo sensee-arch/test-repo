@@ -37,7 +37,7 @@ body {
 }
 
 /* ── Layout ── */
-.app-container {
+main.app-container {
   max-width: var(--max-width);
   margin: 0 auto;
   background: var(--color-surface);
@@ -349,7 +349,7 @@ body {
     padding: 16px 12px;
   }
 
-  .app-container {
+  main.app-container {
     padding: 20px 16px;
   }
 
@@ -364,7 +364,7 @@ body {
     padding: 12px 8px;
   }
 
-  .app-container {
+  main.app-container {
     padding: 16px 12px;
     border-radius: var(--radius-sm);
   }
