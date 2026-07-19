@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <header class="app-header">
+      <h1>📋 TodoList</h1>
+    </header>
+
+    <section id="task-input-section">
+      <form id="task-form">
+        <input
+          type="text"
+          id="task-input"
+          placeholder="What needs to be done?"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" id="add-btn">Add</button>
+      </form>
+    </section>
+
+    <section id="filter-section">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Active</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </section>
+
+    <section id="list-section">
+      <ul id="task-list"></ul>
+    </section>
+
+    <section id="stats-section">
+      <div id="stats-bar">
+        <span id="items-left">0 items left</span>
+        <button id="clear-completed" class="hidden">Clear completed</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="store.js"></script>
+  <script src="render.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
