@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TODO List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container" id="app">
+    <h1 class="app-title">📋 TODO List</h1>
+
+    <!-- Storage unavailable warning -->
+    <div class="storage-warning" id="storageWarning" role="alert">
+      ⚠️ 浏览器 localStorage 不可用，数据将无法持久保存。
+    </div>
+
+    <!-- Add task input row -->
+    <div class="input-row">
+      <input
+        id="todoInput"
+        type="text"
+        placeholder="输入待办事项…"
+        maxlength="100"
+        autofocus
+        aria-label="新待办事项"
+      >
+      <button id="addBtn">添加</button>
+    </div>
+
+    <!-- Controls: filters + stats + clear completed -->
+    <div class="controls">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">全部</button>
+        <button class="filter-btn" data-filter="active">未完成</button>
+        <button class="filter-btn" data-filter="completed">已完成</button>
+      </div>
+      <div class="stats">
+        <span id="totalCount">共 0 项</span>
+        <span id="doneCount" style="margin-left:8px;">已完成 0 项</span>
+      </div>
+      <button class="clear-btn" id="clearCompleted">清除已完成</button>
+    </div>
+
+    <!-- Task list -->
+    <ul class="todo-list" id="todoList" aria-label="待办列表"></ul>
+
+    <!-- Empty state -->
+    <div class="empty" id="emptyMsg">暂无待办事项</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
