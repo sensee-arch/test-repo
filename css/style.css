@@ -1,0 +1,410 @@
+/* =============================================
+   ToDo List App — Styles
+   ============================================= */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-text: #2c3e50;
+  --color-text-muted: #95a5a6;
+  --color-primary: #3498db;
+  --color-primary-hover: #2980b9;
+  --color-danger: #e74c3c;
+  --color-danger-hover: #c0392b;
+  --color-border: #e0e0e0;
+  --color-completed: #bdc3c7;
+  --color-checkbox: #27ae60;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --transition: 0.2s ease;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* --- App Container --- */
+#app {
+  width: 100%;
+  max-width: 540px;
+}
+
+/* --- Header --- */
+.app-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+/* --- Form --- */
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.todo-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color var(--transition);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.todo-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.btn-add {
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--transition), transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-add:active {
+  transform: scale(0.95);
+}
+
+/* --- Main Section --- */
+.app-main {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* --- Todo List --- */
+.todo-list {
+  list-style: none;
+  margin: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition), opacity var(--transition);
+  animation: fadeIn 0.25s ease;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-item:hover {
+  background: #fafafa;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Checkbox --- */
+.todo-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.todo-checkbox:checked {
+  border-color: var(--color-checkbox);
+  background: var(--color-checkbox);
+}
+
+.todo-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.todo-checkbox:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* --- Todo Title --- */
+.todo-title {
+  flex: 1;
+  font-size: 1rem;
+  word-break: break-word;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  transition: color var(--transition), text-decoration var(--transition);
+}
+
+.todo-title.completed {
+  color: var(--color-completed);
+  text-decoration: line-through;
+}
+
+/* --- Inline Edit Input --- */
+.todo-edit-input {
+  flex: 1;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 4px;
+  outline: none;
+  font-family: inherit;
+}
+
+/* --- Delete Button --- */
+.btn-delete {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color var(--transition), background var(--transition);
+  opacity: 0;
+  visibility: hidden;
+  line-height: 1;
+}
+
+.todo-item:hover .btn-delete {
+  opacity: 1;
+  visibility: visible;
+}
+
+.btn-delete:hover {
+  color: var(--color-danger);
+  background: rgba(231, 76, 60, 0.08);
+}
+
+.btn-delete:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--color-text-muted);
+}
+
+.empty-state p {
+  font-size: 1rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* --- Footer --- */
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  background: #fafafa;
+}
+
+.item-count {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* --- Filter Bar --- */
+.filter-bar {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filter-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: all var(--transition);
+}
+
+.filter-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.filter-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.filter-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* --- Clear Button --- */
+.btn-clear {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--color-danger);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn-clear:hover {
+  background: rgba(231, 76, 60, 0.08);
+  border-color: var(--color-danger);
+}
+
+.btn-clear:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 1px;
+}
+
+/* =============================================
+   Dark Mode (prefers-color-scheme)
+   ============================================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-text: #e4e4e7;
+    --color-text-muted: #71717a;
+    --color-primary: #60a5fa;
+    --color-primary-hover: #3b82f6;
+    --color-danger: #f87171;
+    --color-danger-hover: #ef4444;
+    --color-border: #334155;
+    --color-completed: #52525b;
+    --color-checkbox: #22c55e;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .todo-item:hover {
+    background: #1e293b;
+  }
+
+  .app-footer {
+    background: #1e293b;
+  }
+
+  .todo-input {
+    background: #1e293b;
+    color: var(--color-text);
+  }
+
+  .todo-input::placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+/* =============================================
+   High Contrast Mode
+   ============================================= */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #1a73e8;
+    --color-danger: #d93025;
+    --color-checkbox: #188038;
+    --color-border: #5f6368;
+    --color-text-muted: #5f6368;
+  }
+
+  .todo-input {
+    border-width: 2px;
+  }
+
+  .filter-btn.active {
+    border-color: var(--color-primary);
+    background: rgba(26, 115, 232, 0.08);
+  }
+}
+
+/* =============================================
+   Responsive
+   ============================================= */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.75rem;
+  }
+
+  .app-header h1 {
+    font-size: 2rem;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .todo-item {
+    padding: 0.625rem 0.75rem;
+  }
+}
