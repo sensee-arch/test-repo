@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>📋 TodoList</h1>
+      <p class="subtitle">Stay organized, get things done.</p>
+    </header>
+
+    <main>
+      <!-- Input Section -->
+      <section class="input-section" aria-label="Add new task">
+        <form id="task-form" class="task-form">
+          <div class="input-group">
+            <input
+              type="text"
+              id="task-input"
+              class="task-input"
+              placeholder="What needs to be done?"
+              maxlength="100"
+              autocomplete="off"
+              aria-label="New task title"
+            >
+            <button type="submit" id="add-btn" class="btn btn-primary">
+              Add
+            </button>
+          </div>
+          <span id="char-counter" class="char-counter">0/100</span>
+        </form>
+      </section>
+
+      <!-- Toolbar: Filter & Actions -->
+      <section class="toolbar" aria-label="Task filters and actions">
+        <div class="filter-group" role="tablist" aria-label="Filter tasks">
+          <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button class="filter-btn" data-filter="active" role="tab" aria-selected="false">Active</button>
+          <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">Completed</button>
+        </div>
+        <div class="toolbar-actions">
+          <span id="task-count" class="task-count">0 items</span>
+          <button id="clear-completed-btn" class="btn btn-text">Clear completed</button>
+        </div>
+      </section>
+
+      <!-- Task List -->
+      <section class="task-list-section" aria-label="Task list">
+        <ul id="task-list" class="task-list">
+          <!-- Tasks rendered by JavaScript -->
+        </ul>
+        <div id="empty-state" class="empty-state">
+          <p class="empty-icon">📝</p>
+          <p class="empty-text">No tasks yet. Add one above!</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Data stored locally in your browser. <span class="storage-status" id="storage-status">✓</span></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
