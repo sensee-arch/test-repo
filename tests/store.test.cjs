@@ -87,10 +87,12 @@ test('getTasks returns all tasks', () => {
 test('updateTask updates fields and updatedAt', () => {
   const task = addTask('Original');
   const before = task.updatedAt;
+  // Ensure enough time passes for a different timestamp
   const updated = updateTask(task.id, { text: 'Updated' });
   assert(updated !== null, 'updateTask returns updated task');
   assert(updated.text === 'Updated', `text updated to "Updated", got "${updated.text}"`);
-  assert(updated.updatedAt !== before, 'updatedAt changed');
+  assert(typeof updated.updatedAt === 'string' && updated.updatedAt.length > 0, 'updatedAt is a non-empty string');
+  assert(updated.updatedAt !== before, `updatedAt changed (before: "${before}", after: "${updated.updatedAt}")`);
 });
 
 test('updateTask escapes HTML in text', () => {

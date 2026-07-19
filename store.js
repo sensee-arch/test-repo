@@ -52,7 +52,7 @@ function getTasks() {
  */
 function addTask(text) {
   const tasks = getTasks();
-  const now = new Date().toISOString();
+  const now = new Date(Date.now()).toISOString();
   const task = {
     id: String(Date.now()),
     text: _escapeHtml(text.trim()),
@@ -80,7 +80,7 @@ function updateTask(id, updates) {
   if (sanitized.text !== undefined) {
     sanitized.text = _escapeHtml(String(sanitized.text).trim());
   }
-  sanitized.updatedAt = new Date().toISOString();
+  sanitized.updatedAt = new Date(Date.now()).toISOString();
 
   tasks[idx] = { ...tasks[idx], ...sanitized };
   _save(tasks);
@@ -110,7 +110,7 @@ function toggleTask(id) {
   const task = tasks.find((t) => t.id === id);
   if (!task) return null;
   task.completed = !task.completed;
-  task.updatedAt = new Date().toISOString();
+  task.updatedAt = new Date(Date.now()).toISOString();
   _save(tasks);
   return task;
 }
