@@ -1,195 +1,193 @@
-// js/view.js — Rendering Engine & DOM Management
+/**
+ * view.js — ToDo List 视图层（渲染引擎）
+ *
+ * 职责：
+ *   - DOM 构建与更新
+ *   - 空状态展示 / 隐藏
+ *   - 统计信息更新
+ *   - 动画效果
+ */
 
-class TodoView {
+/* ===========================================
+   TodoListView 视图类
+   =========================================== */
+class TodoListView {
   constructor() {
-    this.app = document.getElementById('app');
-    this.render();
+    // DOM 缓存
+    this.listEl = document.getElementById('todo-list');
+    this.emptyStateEl = document.getElementById('empty-state');
+    this.statsTotal = document.getElementById('stats-total');
+    this.statsActive = document.getElementById('stats-active');
+    this.statsCompleted = document.getElementById('stats-completed');
+
+    if (!this.listEl || !this.emptyStateEl) {
+      throw new Error('[View] Required DOM elements missing');
+    }
   }
 
-  // ── Initial render ──────────────────────────────────────────
+  /* ---- 批量渲染 ---- */
 
-  render() {
-    this.app.innerHTML = `
-      <main class="todo-app" role="main">
-        <header class="todo-header">
-          <h1 class="todo-title">todos</h1>
-          <p class="todo-subtitle">A simple ToDo list</p>
-        </header>
+  /**
+   * 渲染待办列表
+   * @param {Array} todos - 待办事项数组
+   */
+  render(todos) {
+    // 清空列表
+    this.listEl.innerHTML = '';
 
-        <section class="todo-main" aria-label="Todo list">
-          <form class="todo-form" id="todo-form" aria-label="Add new todo">
-            <input
-              type="text"
-              id="todo-input"
-              class="todo-input"
-              placeholder="What needs to be done?"
-              autofocus
-              aria-label="New todo item"
-              maxlength="500"
-            />
-            <button type="submit" class="todo-add-btn" aria-label="Add todo">
-              <span aria-hidden="true">+</span>
-              <span class="sr-only">Add</span>
-            </button>
-          </form>
-
-          <div class="todo-list-container" id="todo-list-container">
-            <ul class="todo-list" id="todo-list" role="list" aria-label="Todo items"></ul>
-            <div class="todo-empty" id="todo-empty">
-              <p>No tasks yet. Add one above!</p>
-            </div>
-          </div>
-
-          <footer class="todo-footer" id="todo-footer">
-            <span class="todo-count" id="todo-count">0 items left</span>
-            <div class="todo-filters" role="group" aria-label="Filter todos">
-              <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
-              <button class="filter-btn" data-filter="active" aria-pressed="false">Active</button>
-              <button class="filter-btn" data-filter="completed" aria-pressed="false">Completed</button>
-            </div>
-            <button class="todo-clear-btn" id="clear-completed" aria-label="Clear completed items">Clear completed</button>
-          </footer>
-        </section>
-
-        <template id="todo-item-template">
-          <li class="todo-item" role="listitem">
-            <input type="checkbox" class="todo-checkbox" aria-label="Toggle completion" />
-            <label class="todo-label"></label>
-            <button class="todo-delete-btn" aria-label="Delete task">&times;</button>
-          </li>
-        </template>
-      </main>
-    `;
-
-    this.cacheElements();
-  }
-
-  // ── DOM cache ───────────────────────────────────────────────
-
-  cacheElements() {
-    this.form = document.getElementById('todo-form');
-    this.input = document.getElementById('todo-input');
-    this.list = document.getElementById('todo-list');
-    this.empty = document.getElementById('todo-empty');
-    this.footer = document.getElementById('todo-footer');
-    this.count = document.getElementById('todo-count');
-    this.filters = document.querySelectorAll('.filter-btn');
-    this.clearBtn = document.getElementById('clear-completed');
-    this.template = document.getElementById('todo-item-template');
-  }
-
-  // ── List rendering ──────────────────────────────────────────
-
-  renderList(items, filter = 'all') {
-    this.list.innerHTML = '';
-
-    const filtered = items.filter(item => {
-      if (filter === 'active') return !item.completed;
-      if (filter === 'completed') return item.completed;
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      this.list.classList.add('hidden');
-      this.empty.classList.remove('hidden');
-    } else {
-      this.list.classList.remove('hidden');
-      this.empty.classList.add('hidden');
+    if (!todos || todos.length === 0) {
+      this.showEmpty();
+      return;
     }
 
-    const fragment = document.createDocumentFragment();
-    filtered.forEach(item => {
-      fragment.appendChild(this.createTodoElement(item));
-    });
-    this.list.appendChild(fragment);
+    this.hideEmpty();
 
-    this.updateCount(items);
+    // 逐个创建并插入 DOM（批量）
+    const fragment = document.createDocumentFragment();
+    todos.forEach((todo, index) => {
+      const li = this.createTodoElement(todo, index);
+      fragment.appendChild(li);
+    });
+    this.listEl.appendChild(fragment);
   }
 
-  createTodoElement(item) {
-    const clone = this.template.content.cloneNode(true);
-    const li = clone.querySelector('.todo-item');
-    const checkbox = clone.querySelector('.todo-checkbox');
-    const label = clone.querySelector('.todo-label');
-    const deleteBtn = clone.querySelector('.todo-delete-btn');
+  /* ---- 单个元素创建 ---- */
 
-    li.dataset.id = item.id;
-    checkbox.checked = item.completed;
-    label.textContent = item.title;
-    li.classList.toggle('completed', item.completed);
+  /**
+   * 创建单个待办项 DOM 元素
+   * @param {Object} todo - 待办项数据
+   * @param {number} index - 在列表中的位置（动画延迟）
+   * @returns {HTMLLIElement}
+   */
+  createTodoElement(todo, index = 0) {
+    const li = document.createElement('li');
+    li.className = `todo-item${todo.completed ? ' completed' : ''}`;
+    li.dataset.id = todo.id;
 
-    // Entry animation
-    li.style.opacity = '0';
-    li.style.transform = 'translateY(-8px)';
-    requestAnimationFrame(() => {
-      li.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-      li.style.opacity = '1';
-      li.style.transform = 'translateY(0)';
-    });
+    const priorityLabels = { high: '高', medium: '中', low: '低' };
+    const created = new Date(todo.createdAt);
+
+    // 智能时间显示
+    const now = new Date();
+    const isToday =
+      created.getFullYear() === now.getFullYear() &&
+      created.getMonth() === now.getMonth() &&
+      created.getDate() === now.getDate();
+
+    let timeStr;
+    if (isToday) {
+      timeStr = created.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else {
+      timeStr = created.toLocaleDateString('zh-CN', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+
+    li.innerHTML =
+      '<input type="checkbox" class="todo-checkbox" ' +
+      (todo.completed ? 'checked' : '') +
+      ' aria-label="标记完成">' +
+      '<span class="todo-title">' +
+      this.escapeHtml(todo.title) +
+      '</span>' +
+      '<span class="todo-priority ' +
+      todo.priority +
+      '">' +
+      (priorityLabels[todo.priority] || '中') +
+      '</span>' +
+      '<span class="todo-time">' +
+      timeStr +
+      '</span>' +
+      '<button class="todo-delete" aria-label="删除待办事项">&times;</button>';
+
+    // 入场动画（交错延迟）
+    const delay = Math.min(index * 40, 300);
+    li.style.animation = `slideIn 0.25s ease-out ${delay}ms both`;
+    li.dataset.animating = 'true';
+    setTimeout(() => {
+      li.style.animation = '';
+      delete li.dataset.animating;
+    }, delay + 280);
 
     return li;
   }
 
-  // ── Single element mutations ────────────────────────────────
+  /* ---- 空状态切换 ---- */
 
-  updateTodoElement(item) {
-    const li = this.list.querySelector(`[data-id="${item.id}"]`);
-    if (!li) return;
-    li.querySelector('.todo-checkbox').checked = item.completed;
-    li.querySelector('.todo-label').textContent = item.title;
-    li.classList.toggle('completed', item.completed);
+  showEmpty() {
+    this.listEl.style.display = 'none';
+    this.emptyStateEl.classList.remove('hidden');
   }
 
-  removeTodoElement(id) {
-    const li = this.list.querySelector(`[data-id="${id}"]`);
-    if (!li) return;
-    li.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-    li.style.opacity = '0';
-    li.style.transform = 'translateX(20px)';
-    setTimeout(() => li.remove(), 200);
+  hideEmpty() {
+    this.listEl.style.display = '';
+    this.emptyStateEl.classList.add('hidden');
   }
 
-  // ── Count / filter buttons / clear ──────────────────────────
+  /* ---- 统计更新 ---- */
 
-  updateCount(items) {
-    const n = items.filter(i => !i.completed).length;
-    this.count.textContent = `${n} item${n !== 1 ? 's' : ''} left`;
+  /**
+   * 更新统计栏
+   * @param {number} total - 总数
+   * @param {number} active - 待办数
+   * @param {number} completed - 已完成数
+   */
+  updateStats(total, active, completed) {
+    if (this.statsTotal) this.statsTotal.textContent = '总计: ' + total;
+    if (this.statsActive) this.statsActive.textContent = '待办: ' + active;
+    if (this.statsCompleted)
+      this.statsCompleted.textContent = '已完成: ' + completed;
   }
 
-  updateFilterButtons(filter) {
-    this.filters.forEach(btn => {
-      const active = btn.dataset.filter === filter;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-pressed', String(active));
-    });
-  }
+  /* ---- 单项删除动画 ---- */
 
-  updateClearButton(items) {
-    this.clearBtn.style.display = items.some(i => i.completed) ? '' : 'none';
-  }
+  /**
+   * 播放删除动画后移除元素
+   * @param {string} id - 待办项 ID
+   * @param {Function} [onComplete] - 动画完成回调
+   */
+  removeItem(id, onComplete) {
+    const el = this.listEl.querySelector('[data-id="' + CSS.escape(id) + '"]');
+    if (!el) return;
 
-  // ── Input helpers ───────────────────────────────────────────
-
-  getInputValue() {
-    const val = this.input.value.trim();
-    this.input.value = '';
-    return val;
-  }
-
-  showError(msg) {
-    const existing = this.app.querySelector('.todo-error');
-    if (existing) existing.remove();
-
-    const el = document.createElement('div');
-    el.className = 'todo-error';
-    el.textContent = msg;
-    el.setAttribute('role', 'alert');
-    this.form.after(el);
-
+    el.classList.add('removing');
+    const handler = function () {
+      el.removeEventListener('transitionend', handler);
+      if (typeof onComplete === 'function') onComplete();
+    };
+    el.addEventListener('transitionend', handler);
+    // 回退：250ms 后强制移除
     setTimeout(() => {
-      el.style.transition = 'opacity 0.3s ease';
-      el.style.opacity = '0';
-      setTimeout(() => el.remove(), 300);
-    }, 3000);
+      el.removeEventListener('transitionend', handler);
+      if (el.parentNode) el.parentNode.removeChild(el);
+      if (typeof onComplete === 'function') onComplete();
+    }, 300);
+  }
+
+  /* ---- 辅助方法 ---- */
+
+  /**
+   * HTML 转义（防 XSS）
+   * @param {string} text
+   * @returns {string}
+   */
+  escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    return text.replace(/[&<>"']/g, function (ch) {
+      return map[ch];
+    });
   }
 }
