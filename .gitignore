@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+.coverage
+__pycache__/
+.pytest_cache/
+.venv/
+output.json
+task_output.json
+trace.md
+*.pyc

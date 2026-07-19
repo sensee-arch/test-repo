@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>📋 Todo App</h1>
+      <button id="theme-toggle" aria-label="切换主题">🌙</button>
+    </header>
+
+    <main>
+      <section class="input-area" aria-label="新增待办">
+        <label for="todo-input" class="sr-only">新增待办事项</label>
+        <input
+          type="text"
+          id="todo-input"
+          placeholder="输入待办事项，按 Enter 添加"
+          maxlength="500"
+          autocomplete="off"
+        >
+        <button id="add-btn" aria-label="添加">添加</button>
+      </section>
+
+      <section class="filter-area" aria-label="筛选与操作">
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="active">活跃</button>
+          <button class="filter-btn" data-filter="completed">已完成</button>
+        </div>
+        <button id="clear-completed-btn" class="clear-btn">清除已完成</button>
+      </section>
+
+      <section class="list-area" aria-label="待办列表">
+        <p id="empty-state" class="empty-state hidden">🎉 暂无待办事项</p>
+        <ul id="todo-list" role="list" aria-label="待办事项列表"></ul>
+      </section>
+    </main>
+
+    <footer id="stats-bar" class="stats-bar" aria-label="统计信息">
+      <span id="stats-total">总计: <strong>0</strong></span>
+      <span id="stats-completed">已完成: <strong>0</strong></span>
+      <span id="stats-pending">待完成: <strong>0</strong></span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
