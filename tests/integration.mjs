@@ -408,7 +408,11 @@ async function runTests() {
       const f = document.getElementById('todo-form');
       return f ? window.getComputedStyle(f).flexDirection : 'none';
     });
-    ok(`Form layout: ${formDir}`);
+    if (formDir === 'column') {
+      ok('Form switches to column layout on mobile');
+    } else {
+      fail(`Expected column layout, got "${formDir}"`);
+    }
 
     await nc.close();
 
