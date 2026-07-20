@@ -410,11 +410,13 @@ class EventModule {
   }
 
   /**
-   * React to DataModel changes (used as onChange subscriber).
+   * React to DataModule changes.
+   * Only updates stats to preserve animation DOM state.
+   * Full refresh is triggered explicitly (filter switch, etc.).
    * @param {{ tasks:Array, stats:Object }} _
    */
   onDataChanged(_) {
-    this.#refresh();
+    this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
   }
 
   /**
@@ -449,15 +451,33 @@ class EventModule {
     });
   }
 
-  /** Bind toggle checkboxes via delegation. */
+  /** Bind toggle checkboxes via delegation with completion animation. */
   bindToggleCheckbox() {
     this.#listEl.addEventListener('click', (e) => {
       const cb = e.target.closest('.todo-item__toggle');
       if (!cb) return;
       const li = cb.closest('.todo-item');
       if (!li) return;
-      try { this.#dm.toggleTask(li.dataset.id); } catch (err) {
-        console.error('toggleTask failed:', err.message);
+      const id = li.dataset.id;
+      const wasCompleted = li.classList.contains('todo-item--completed');
+
+      if (!wasCompleted) {
+        // Completing: add scaleIn animation on checkbox + title fade
+        li.classList.add('todo-item--completing');
+        setTimeout(() => {
+          try { this.#dm.toggleTask(id); } catch (err) {
+            console.error('toggleTask failed:', err.message);
+          }
+          li.classList.remove('todo-item--completing');
+          li.classList.add('todo-item--completed');
+          this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
+        }, 300);
+      } else {
+        // Un-completing: toggle immediately, no animation
+        try { this.#dm.toggleTask(id); } catch (err) {
+          console.error('toggleTask failed:', err.message);
+        }
+        this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
       }
     });
   }

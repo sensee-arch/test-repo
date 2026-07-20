@@ -168,15 +168,50 @@ body {
   background: #f9f9ff;
 }
 
-/* Animations */
-.todo-item--enter {
-  animation: todoFadeIn 0.3s ease forwards;
+/* ─── TASK-3: CSS 交互动效 ───
+   GPU accelerated (transform + opacity only)
+   ========================================= */
+
+/* Slide in: new task enters from above (0.2s ease-out) */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.todo-item--exit {
-  animation: todoFadeOut 0.3s ease forwards;
+/* Slide out: task slides left and fades (0.25s ease-in, forwards) */
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
 }
 
+/* Scale in: checkmark confirm animation (0.3s ease-out) */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Legacy fade animations (kept for compatibility) */
 @keyframes todoFadeIn {
   from {
     opacity: 0;
@@ -200,6 +235,34 @@ body {
     padding: 0 1.25rem;
   }
 }
+
+/* Enter animation class (new task slides in) */
+.todo-item--enter {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Exit animation class (deleting task slides out) */
+.todo-item--exit {
+  animation: slideOut 0.25s ease-in;
+  animation-fill-mode: forwards;
+}
+
+/* --- Completion animation: checkmark scale + title fade --- */
+.todo-item--completing {
+  /* Transient class — JS controls lifecycle */
+}
+
+.todo-item--completing .todo-item__toggle {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.todo-item--completing .todo-item__title {
+  transition: color 0.3s ease-out;
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+/* Input focus highlight transition (0.2s, already present on .todo-form__input) */
 
 /* Completed state */
 .todo-item--completed .todo-item__title {
