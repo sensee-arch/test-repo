@@ -1,35 +1,82 @@
 /**
- * Storage Module — localStorage abstraction layer
- * Key: todolist_tasks
+ * Storage Module — localStorage abstraction layer with in-memory fallback
+ * @module storage
+ */
+
+/**
+ * @typedef {Object} Task
+ * @property {string} id - Unique task identifier
+ * @property {string} title - Task title text
+ * @property {boolean} completed - Completion status
+ * @property {string} createdAt - ISO 8601 creation timestamp
+ * @property {string} [updatedAt] - ISO 8601 last-updated timestamp
  */
 
 const STORAGE_KEY = 'todolist_tasks';
 
+/** @type {boolean} Whether localStorage is available */
+let storageAvailable = true;
+
 /**
- * Read and parse tasks from localStorage.
- * @returns {Task[]} Array of task objects
+ * Detect whether localStorage is available and usable.
+ * Sets a test key, reads it back, then cleans up.
+ * @returns {boolean} true if localStorage is functional
  */
-function getTasks() {
+function checkStorageAvailability() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const tasks = JSON.parse(raw);
-    if (!Array.isArray(tasks)) return [];
-    return tasks;
-  } catch (e) {
-    console.warn('Failed to parse tasks from localStorage:', e);
-    return [];
+    const key = '__storage_test__';
+    localStorage.setItem(key, '1');
+    const value = localStorage.getItem(key);
+    localStorage.removeItem(key);
+    return value === '1';
+  } catch {
+    return false;
   }
 }
 
 /**
- * Serialize and write tasks to localStorage.
+ * In-memory fallback store when localStorage is unavailable.
+ * @type {import('./app').Task[]}
+ */
+let memoryStore = [];
+
+// Initialize storage check
+storageAvailable = checkStorageAvailability();
+
+if (!storageAvailable) {
+  // localStorage unavailable, using in-memory fallback
+}
+
+/**
+ * Read and parse tasks from storage (localStorage or in-memory fallback).
+ * @returns {Task[]} Array of task objects
+ */
+function getTasks() {
+  if (storageAvailable) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const tasks = JSON.parse(raw);
+      return Array.isArray(tasks) ? tasks : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+  return memoryStore;
+}
+
+/**
+ * Serialize and write tasks to storage (localStorage or in-memory fallback).
  * @param {Task[]} tasks - Array of task objects
  */
 function saveTasks(tasks) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  } catch (e) {
-    console.error('Failed to save tasks to localStorage:', e);
+  if (storageAvailable) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (_e) {
+      // localStorage write failed (quota exceeded, etc.)
+    }
+  } else {
+    memoryStore = tasks;
   }
 }
