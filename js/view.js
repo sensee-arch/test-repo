@@ -71,12 +71,12 @@ export class TodoView {
 
     const editBtn = document.createElement('button');
     editBtn.className = 'edit-btn';
-    editBtn.textContent = 'Edit';
+    editBtn.textContent = '\u270F\uFE0F';
     editBtn.setAttribute('aria-label', `Edit "${todo.title}"`);
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
-    deleteBtn.textContent = 'Delete';
+    deleteBtn.textContent = '\uD83D\uDDD1\uFE0F';
     deleteBtn.setAttribute('aria-label', `Delete "${todo.title}"`);
 
     actions.appendChild(editBtn);
