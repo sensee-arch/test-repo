@@ -205,10 +205,10 @@ function handleEdit(id, newTitle) {
   if (!id) return;
   var trimmed = (typeof newTitle === 'string' ? newTitle : '').trim();
 
-  // Empty input → delete task
+  // Empty input → revert to original (keep old text)
   if (!trimmed) {
     editingId = null;
-    handleDelete(id);
+    renderAll();
     return;
   }
 
@@ -291,6 +291,10 @@ function onListClick(e) {
  * @param {Event} e - DblClick event
  */
 function onListDblClick(e) {
+  // Only trigger on the text label
+  if (!e.target.classList.contains('todo-title')) return;
+  e.preventDefault();
+
   var li = e.target.closest('.todo-item');
   if (!li || li.classList.contains('editing')) return;
   var id = li.dataset.id;

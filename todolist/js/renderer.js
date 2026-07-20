@@ -104,6 +104,7 @@ var Renderer = (function () {
 
     if (editingId === todo.id) {
       li.classList.add('editing');
+      li.classList.add('todo-item--editing');
       var editInput = document.createElement('input');
       editInput.className = 'edit-input';
       editInput.type = 'text';

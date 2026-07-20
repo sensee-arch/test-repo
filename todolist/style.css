@@ -230,6 +230,11 @@ body {
   visibility: visible;
 }
 
+/* Editing state — spec class alias */
+.todo-item--editing {
+  /* inherits all .todo-item.editing styles via class addition on the same element */
+}
+
 /* Edit input */
 .edit-input {
   flex: 1;
