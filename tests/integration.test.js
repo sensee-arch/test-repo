@@ -45,6 +45,7 @@ function describe(name, fn) {
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'todolist', 'index.html'), 'utf8');
 const storageJs = fs.readFileSync(path.join(__dirname, '..', 'todolist', 'js', 'storage.js'), 'utf8');
+const rendererJs = fs.readFileSync(path.join(__dirname, '..', 'todolist', 'js', 'renderer.js'), 'utf8');
 const appJs = fs.readFileSync(path.join(__dirname, '..', 'todolist', 'js', 'app.js'), 'utf8');
 
 // Create a DOM with local storage mock
@@ -76,6 +77,10 @@ Object.defineProperty(window, 'localStorage', {
 const storageScript = document.createElement('script');
 storageScript.textContent = storageJs;
 document.head.appendChild(storageScript);
+
+const rendererScript = document.createElement('script');
+rendererScript.textContent = rendererJs;
+document.head.appendChild(rendererScript);
 
 const appScript = document.createElement('script');
 appScript.textContent = appJs;
@@ -361,13 +366,17 @@ domContentLoaded.then(function () {
 
   /* ═══ Code Quality ═══ */
 
-  describe('Code Quality: No innerHTML assignments (except clear)', function () {
-    const appSource = appJs;
-    // Only allowed innerHTML usage is clearing the list
-    var innerHTMLAssignments = appSource.match(/\.innerHTML\s*=/g);
-    // The only allowed one is $todoList.innerHTML = ''
-    var innerHTMLCount = innerHTMLAssignments ? innerHTMLAssignments.length : 0;
-    assertEqual(innerHTMLCount, 1, 'Only one innerHTML assignment in app.js (for list clear)');
+  describe('Code Quality: No innerHTML assignments (except clear in renderer)', function () {
+    // The only allowed innerHTML is $todoList.innerHTML = '' in renderer.js
+    var rendererMatches = rendererJs.match(/\.innerHTML\s*=/g);
+    var rendererCount = rendererMatches ? rendererMatches.length : 0;
+    assertEqual(rendererCount, 1, 'Exactly one innerHTML assignment in renderer.js (for list clear)');
+
+    // app.js and storage.js must have zero innerHTML assignments
+    var appMatches = appJs.match(/\.innerHTML\s*=/g);
+    assertEqual(appMatches ? appMatches.length : 0, 0, 'No innerHTML assignment in app.js');
+    var storageMatches = storageJs.match(/\.innerHTML\s*=/g);
+    assertEqual(storageMatches ? storageMatches.length : 0, 0, 'No innerHTML assignment in storage.js');
   });
 
   describe('Code Quality: No eval or document.write', function () {
@@ -378,10 +387,11 @@ domContentLoaded.then(function () {
     assert(!storageJs.includes('document.write'), 'No document.write in storage.js');
   });
 
-  describe('Code Quality: Three-file separation', function () {
+  describe('Code Quality: Module separation', function () {
     assert(html.includes('<link'), 'index.html links to CSS');
     assert(html.includes('.css'), 'index.html references CSS file');
     assert(html.includes('js/storage.js'), 'index.html includes storage.js');
+    assert(html.includes('js/renderer.js'), 'index.html includes renderer.js');
     assert(html.includes('js/app.js'), 'index.html includes app.js');
   });
 
