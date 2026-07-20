@@ -173,3 +173,311 @@ class DataManager {
 }
 
 // #endregion
+
+// #region App
+
+/**
+ * App — TodoList UI 控制器
+ * 负责 DOM 渲染、事件绑定、内联编辑和全局交互控制
+ */
+class App {
+  /**
+   * @param {DataManager} dataManager
+   */
+  constructor(dataManager) {
+    this.dataManager = dataManager;
+    this.todos = [];
+    this.editingId = null;
+
+    // DOM references
+    this.inputEl = document.getElementById('todo-input-field');
+    this.addBtn = document.getElementById('add-btn');
+    this.listEl = document.getElementById('todo-list');
+    this.totalCountEl = document.getElementById('total-count');
+    this.activeCountEl = document.getElementById('active-count');
+    this.doneCountEl = document.getElementById('done-count');
+  }
+
+  /**
+   * Bootstrap: 加载数据、绑定事件、首次渲染
+   */
+  init() {
+    this.todos = this.dataManager.getAll();
+    this._bindEvents();
+    this.render();
+  }
+
+  // ─── Event Binding ───
+
+  _bindEvents() {
+    // 添加任务：点击按钮
+    this.addBtn.addEventListener('click', () => this._handleAdd());
+
+    // 添加任务：输入框 Enter
+    this.inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this._handleAdd();
+      }
+    });
+
+    // 事件委托：点击（切换完成 / 删除）
+    this.listEl.addEventListener('click', (e) => {
+      const item = e.target.closest('.todo-item');
+      if (!item) return;
+      const id = item.dataset.id;
+
+      if (e.target.closest('.delete-btn')) {
+        this._handleDelete(id);
+      } else if (e.target.closest('.todo-checkbox')) {
+        this._handleToggle(id);
+      }
+    });
+
+    // 双击标题：进入内联编辑
+    this.listEl.addEventListener('dblclick', (e) => {
+      const title = e.target.closest('.todo-title');
+      if (!title) return;
+      const item = title.closest('.todo-item');
+      if (!item) return;
+      this._startEditing(item.dataset.id);
+    });
+
+    // 键盘事件：内联编辑 Enter 保存 / Escape 取消
+    this.listEl.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== 'Escape') return;
+      const editInput = e.target.closest('.edit-input');
+      if (!editInput) return;
+      const item = editInput.closest('.todo-item');
+      if (!item) return;
+
+      e.preventDefault();
+      if (e.key === 'Enter') {
+        this._finishEditing(item.dataset.id, editInput.value);
+      } else {
+        this._cancelEditing(item.dataset.id);
+      }
+    });
+
+    // focusout（冒泡版 blur）：失焦取消编辑
+    // 使用 capture + setTimeout 避免与 Enter/Escape 冲突
+    this.listEl.addEventListener('focusout', (e) => {
+      const editInput = e.target.closest('.edit-input');
+      if (!editInput) return;
+      const item = editInput.closest('.todo-item');
+      if (!item) return;
+      const id = item.dataset.id;
+      setTimeout(() => {
+        if (this.editingId === id) {
+          this._cancelEditing(id);
+        }
+      }, 200);
+    });
+  }
+
+  // ─── Actions ───
+
+  _handleAdd() {
+    this._clearMessage();
+    this.inputEl.style.borderColor = '';
+
+    const title = this.inputEl.value;
+    if (!title.trim()) {
+      this.inputEl.style.borderColor = '#e74c3c';
+      this._showMessage('请输入任务内容', 'error');
+      this.inputEl.focus();
+      return;
+    }
+
+    try {
+      this.dataManager.add(title);
+      this.inputEl.value = '';
+      this.inputEl.style.borderColor = '';
+      this.todos = this.dataManager.getAll();
+      this.render();
+    } catch (e) {
+      this._showMessage(e.message, 'error');
+    }
+  }
+
+  _handleToggle(id) {
+    try {
+      this.dataManager.toggle(id);
+      this.todos = this.dataManager.getAll();
+      this.render();
+    } catch (e) {
+      console.warn('[App] Toggle failed:', e);
+      this._showMessage('操作失败，请重试', 'error');
+    }
+  }
+
+  _handleDelete(id) {
+    try {
+      this.dataManager.remove(id);
+      this.todos = this.dataManager.getAll();
+      this.render();
+    } catch (e) {
+      console.warn('[App] Delete failed:', e);
+      this._showMessage('删除失败，请重试', 'error');
+    }
+  }
+
+  // ─── Inline Editing ───
+
+  _startEditing(id) {
+    if (this.editingId) this._cancelEditing(this.editingId);
+
+    this.editingId = id;
+    const item = this.listEl.querySelector(`[data-id="${id}"]`);
+    if (!item) return;
+
+    item.classList.add('editing');
+    const editInput = item.querySelector('.edit-input');
+    const titleEl = item.querySelector('.todo-title');
+    if (editInput && titleEl) {
+      editInput.value = titleEl.textContent;
+      // 使用 requestAnimationFrame 确保 DOM 更新后再聚焦
+      requestAnimationFrame(() => {
+        editInput.focus();
+        editInput.select();
+      });
+    }
+  }
+
+  _finishEditing(id, newTitle) {
+    const trimmed = newTitle.trim();
+    if (!trimmed) {
+      this._showMessage('任务内容不能为空', 'error');
+      // 保持编辑状态，重新聚焦
+      const item = this.listEl.querySelector(`[data-id="${id}"]`);
+      if (item) {
+        const editInput = item.querySelector('.edit-input');
+        if (editInput) editInput.focus();
+      }
+      return;
+    }
+
+    try {
+      this.dataManager.update(id, { title: trimmed });
+      this.editingId = null;
+      this.todos = this.dataManager.getAll();
+      this.render();
+    } catch (e) {
+      this._showMessage(e.message, 'error');
+      const item = this.listEl.querySelector(`[data-id="${id}"]`);
+      if (item) {
+        const editInput = item.querySelector('.edit-input');
+        if (editInput) editInput.focus();
+      }
+    }
+  }
+
+  _cancelEditing(id) {
+    if (this.editingId !== id) return;
+    this.editingId = null;
+    const item = this.listEl.querySelector(`[data-id="${id}"]`);
+    if (item) {
+      item.classList.remove('editing');
+    }
+  }
+
+  // ─── Rendering ───
+
+  /**
+   * 全量重绘 Todo 列表
+   * 使用 document.createElement + textContent，禁止 innerHTML
+   */
+  render() {
+    this.listEl.innerHTML = '';
+
+    if (this.todos.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'empty-message';
+      emptyMsg.textContent = '暂无任务，添加一个吧';
+      this.listEl.appendChild(emptyMsg);
+      this.renderStats();
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    for (const todo of this.todos) {
+      const item = document.createElement('div');
+      item.className = 'todo-item';
+      item.dataset.id = todo.id;
+      if (todo.completed) item.classList.add('completed');
+
+      // 复选框
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'todo-checkbox';
+      checkbox.checked = todo.completed;
+      checkbox.setAttribute('aria-label', `标记 "${todo.title}" 为${todo.completed ? '未完成' : '已完成'}`);
+
+      // 标题
+      const title = document.createElement('span');
+      title.className = 'todo-title';
+      title.textContent = todo.title;
+
+      // 内联编辑输入框（默认隐藏，.editing 时显示）
+      const editInput = document.createElement('input');
+      editInput.type = 'text';
+      editInput.className = 'edit-input';
+      editInput.value = todo.title;
+      editInput.setAttribute('aria-label', `编辑 "${todo.title}"`);
+
+      // 删除按钮
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent = '×';
+      deleteBtn.setAttribute('aria-label', `删除 "${todo.title}"`);
+      deleteBtn.title = '删除任务';
+
+      item.appendChild(checkbox);
+      item.appendChild(title);
+      item.appendChild(editInput);
+      item.appendChild(deleteBtn);
+      fragment.appendChild(item);
+    }
+
+    this.listEl.appendChild(fragment);
+    this.renderStats();
+  }
+
+  /**
+   * 更新底部统计信息
+   */
+  renderStats() {
+    const stats = this.dataManager.stats();
+    this.totalCountEl.textContent = stats.total;
+    this.activeCountEl.textContent = stats.active;
+    this.doneCountEl.textContent = stats.done;
+  }
+
+  // ─── Message / Error Display ───
+
+  _showMessage(text, type = 'info') {
+    this._clearMessage();
+    const msg = document.createElement('div');
+    msg.className = `message ${type}`;
+    msg.id = 'app-message';
+    msg.textContent = text;
+
+    const container = document.querySelector('.app-container');
+    const inputArea = document.getElementById('todo-input');
+    container.insertBefore(msg, inputArea.nextSibling);
+
+    // 3 秒后自动消失
+    setTimeout(() => {
+      const el = document.getElementById('app-message');
+      if (el) el.remove();
+    }, 3000);
+  }
+
+  _clearMessage() {
+    const msg = document.getElementById('app-message');
+    if (msg) msg.remove();
+  }
+}
+
+// #endregion
