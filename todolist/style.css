@@ -292,3 +292,24 @@ body {
     order: -1;
   }
 }
+
+/* ---------- Error / Info Messages ---------- */
+.message {
+  text-align: center;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.message.error {
+  background: rgba(231, 76, 60, 0.08);
+  color: #c0392b;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.message.info {
+  background: rgba(52, 152, 219, 0.08);
+  color: #2980b9;
+  border: 1px solid rgba(52, 152, 219, 0.2);
+}

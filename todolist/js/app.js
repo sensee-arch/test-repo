@@ -92,6 +92,32 @@ function sortTasks(taskList) {
 
 /* ─── Rendering ─── */
 
+/* ─── Message Display ─── */
+
+/** Show an in-page error/info message. Auto-dismisses after 3s. */
+function showMessage(text) {
+  clearMessage();
+  var msg = document.createElement('div');
+  msg.className = 'message error';
+  msg.id = 'app-message';
+  msg.textContent = text;
+
+  var container = document.querySelector('.todo-container');
+  var listEl = document.getElementById('todo-list');
+  container.insertBefore(msg, listEl);
+
+  setTimeout(function () {
+    var el = document.getElementById('app-message');
+    if (el) el.remove();
+  }, 3000);
+}
+
+/** Remove any visible message element. */
+function clearMessage() {
+  var msg = document.getElementById('app-message');
+  if (msg) msg.remove();
+}
+
 /** Re-render the task list UI. */
 function render() {
   const filtered = getFilteredTasks();
@@ -171,7 +197,7 @@ function addTask(title) {
   const trimmed = title.trim();
   if (!trimmed) return;
   if (trimmed.length > TITLE_MAX_LENGTH) {
-    alert('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
+    showMessage('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
     return;
   }
   tasks.push(createTask(trimmed));
@@ -226,7 +252,7 @@ function updateTaskTitle(id, newTitle) {
     return;
   }
   if (trimmed.length > TITLE_MAX_LENGTH) {
-    alert('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
+    showMessage('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
     return;
   }
   task.title = trimmed;
