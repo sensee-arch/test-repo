@@ -2,46 +2,128 @@
 
 ## 项目概述
 
-- 本项目是一个 Web Todo List 单页应用（SPA），使用纯 HTML/CSS/JavaScript 构建
-- 解决用户在日常任务管理中快速记录、跟踪和完成待办事项的需求，无需安装任何软件
-- 本项目不涉及：用户认证、后端服务、数据库、API 接口、分页、标签分类、自动化测试、CI/CD 部署
+- **项目名称**: test-repo
+- **仓库**: https://github.com/sensee-arch/test-repo
+- **许可证**: MIT
+- **定位**: AI Agent 协作编程试验场。以 git 仓库为载体，让多个 AI Agent 在统一架构规范下协同工作，验证和沉淀 AI 辅助开发的标准化流程。
+- **当前应用**: Todo List 单页应用（SPA），纯 HTML/CSS/JavaScript 构建（Vanilla JS），无外部运行时依赖。用户在浏览器中完成任务创建、编辑、完成切换、删除和过滤，数据通过浏览器 localStorage 持久化。
+- **不涉及**: 用户认证、后端服务、数据库、API 接口、CI/CD 部署、PWA。
 
 ## 核心目标
 
-- ✅ 实现完整的 CRUD 功能：创建、读取、更新、删除待办事项
-- ✅ 支持完成状态切换和视觉反馈（删除线、透明度变化）
-- ✅ 支持按全部/活跃/已完成三种视图过滤
-- ✅ 数据通过浏览器 localStorage 持久化，刷新不丢失
-- ✅ 零外部依赖，单文件部署，打开即用
+### 实验平台目标
+- 验证和演练 AI Agent 协作编程工作流: 需求 → 方案 → 任务 → 开发 → 审核
+- 建立标准化的 AI 项目协作流程和模板
+- 记录和沉淀 AI 辅助开发的实践经验
+
+### Todo 应用目标
+- ✅ 完整的 CRUD 功能: 创建、读取、更新、删除待办事项
+- ✅ 完成状态切换和视觉反馈（删除线、透明度变化）
+- ✅ 按全部/活跃/已完成三种视图过滤
+- ✅ 内联编辑（双击标题进入编辑，Enter 保存、Escape 取消）
+- ✅ 空状态提示（无任务时显示友好提示）
+- ✅ 输入验证（空标题/纯空白不添加）
+- ✅ 标题长度限制（最大 200 字符，超限提示）
+- ✅ XSS 防护（`textContent` 纯文本渲染，禁止动态 `innerHTML` 渲染用户内容）
+- ✅ 数据通过 `localStorage` 持久化（含 `in-memory` fallback），刷新不丢失
+- ✅ 零外部运行时依赖，打开 `todolist/index.html` 即用
 - ❌ 不追求后端同步或多端协同
 - ❌ 不追求 PWA/离线能力或推送通知
 
 ## 技术架构
 
-- **架构风格**：单体 SPA（Single-Page Application）
-- **核心组件**：
-  - HTML 模板层：页面结构（输入框、列表容器、底部控制栏）
-  - CSS 样式层：布局、组件状态、响应式适配
-  - JavaScript 逻辑层：存储模块 → 状态管理 → 渲染函数 → 事件处理
-- **通信方式**：函数内部调用（同步），无网络通信
-- **技术栈**：HTML5 + CSS3 + Vanilla JavaScript ES6+，localStorage API
+### 当前 Todo 应用架构
+
+- **架构风格**: 单体 SPA（Single-Page Application），三文件模块分离
+- **核心文件**（位于 `todolist/` 目录）:
+  - `index.html` — HTML 模板（语义化标签: `<header>/<main>/<section>/<nav>`，ARIA label 支持）
+  - `style.css` — 样式层（CSS 变量、flex 布局、响应式断点 480px、完成态/编辑态样式）
+  - `js/storage.js` — 数据持久层（`localStorage` CRUD + in-memory fallback，UUID v4 时间戳+随机字符生成）
+  - `js/app.js` — UI 控制器（渲染、事件绑定、三态过滤、内联编辑、消息提示）
+- **通信方式**: 函数内部调用（同步），无网络通信
+- **技术栈**: HTML5 + CSS3 + Vanilla JavaScript ES6+，`localStorage` API
+
+### 推荐技术栈（按具体需求确认，当前未使用）
+
+| 类别 | 推荐选项 | 备选方案 |
+|------|----------|----------|
+| 编程语言 | Python 3.11+ | Go, TypeScript/Node.js |
+| Web 框架 | FastAPI | Flask, Express, Gin |
+| 数据库 | SQLite（开发）/ PostgreSQL（生产） | MySQL, MongoDB |
+| API 风格 | RESTful API | GraphQL |
+| 测试框架 | vitest / pytest | unittest |
+| 代码格式 | Ruff / Prettier | Black, gofmt |
+| 包管理 | npm / pip + requirements.txt | Poetry, go mod |
+
+### 技术选型原则
+1. **简单优先** — 不做过度设计，够用就好
+2. **可替换性** — 组件间通过接口解耦，便于替换
+3. **测试驱动** — 核心逻辑必须可测试
 
 ## 基础契约
 
-- 数据格式：所有待办项为 JSON 对象，包含 `id`（字符串）、`title`（字符串）、`completed`（布尔）、`createdAt`（数字时间戳）
-- 存储键名：`todo_items`，值为此 JSON 对象数组的字符串序列
-- 错误语义：localStorage 操作失败时静默降级（`console.warn`），不抛出异常
-- 禁止行为：禁止使用 `innerHTML` 渲染用户输入内容；禁止 `eval()` 或 `new Function()`；禁止修改待办列表容器之外的 DOM
+### Todo 数据契约
 
-### JSON 示例
 ```json
 {
-  "id": "m3xq8f2k1a",
+  "id": "m3xq8f2k-1a1b-4c3d-8e5f-6a7b8c9d0e1f",
   "title": "Buy groceries",
   "completed": false,
-  "createdAt": 1720000000000
+  "createdAt": "2026-07-20T03:00:00.000Z",
+  "updatedAt": "2026-07-20T03:00:00.000Z"
 }
 ```
+
+- **数据格式**: 每项为 JSON 对象，含 `id`（字符串，`Date.now().toString(36) + Math.random().toString(36).slice(2,6)`）、`title`（字符串）、`completed`（布尔）、`createdAt`（ISO-8601 字符串）
+- **存储键名**: `todolist_tasks`，值为 JSON 数组的字符串序列
+- **错误语义**: `localStorage` 操作失败时静默降级，不抛出异常
+- **不可变字段**: `id` 创建后不可修改
+- **禁止行为**: 禁止 `innerHTML` 渲染用户输入（使用 `textContent`）；禁止 `eval()` 或 `new Function()`；禁止修改 `#todo-list` 容器之外的 DOM
+
+### 目录结构
+
+```
+test-repo/
+├── .ai/                       # AI Agent 宪法文档
+│   └── about.md               # 本文件
+├── docs/                      # 文档
+│   └── adr/                   # 架构决策记录（ADR）
+├── todolist/                  # 应用源代码目录
+│   ├── index.html             # 入口 HTML 文件
+│   ├── style.css              # 样式文件
+│   └── js/
+│       ├── storage.js         # 数据持久层（localStorage CRUD）
+│       └── app.js             # UI 控制器（渲染、事件绑定、状态管理）
+├── tests/                     # 测试代码
+│   └── integration.test.js    # 集成测试（Node.js + jsdom，10 功能场景 + 边缘案例 + 代码质量检查）
+├── package.json               # Node.js 依赖配置（vitest 等）
+├── package-lock.json          # 依赖锁定
+├── ARCH.md                    # 架构文档
+├── README.md                  # 项目说明
+├── requirements.txt           # 生产依赖（Python，当前未使用）
+├── requirements-dev.txt       # 开发依赖（Python，当前未使用）
+└── LICENSE                    # MIT 许可证
+```
+
+### 编码规范
+- **JavaScript**: ES6+ 标准，使用 JSDoc 类型注释
+- **命名**: 函数/变量 `camelCase`，常量 `UPPER_SNAKE_CASE`，类名 `PascalCase`（当前无类）
+- **CSS**: 自定义属性（CSS 变量），选择器语义化，BEM 风格类名
+- **HTML**: 语义化标签（`<header>`/`<main>`/`<nav>`/`<button>`），ARIA label 支持可访问性
+- **兼容性**: Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90、Safari ≥ 15
+
+### Git 提交规范
+```
+<type>: <简短描述>
+
+<详细说明（可选）>
+```
+
+提交类型: `feat`（新功能）、`fix`（修复）、`docs`（文档）、`refactor`（重构）、`test`（测试）、`chore`（配置/工具）、`style`（格式化）
+
+### 分支策略
+- `main` — 稳定主分支，始终保持可部署状态
+- `flyinghub-YYYYMMDDHHmmss` — 功能开发分支（按日期时间命名），功能完成后合并到 main
 
 ## Agent 划分
 
@@ -51,23 +133,54 @@
 | Manager | 需求分析、方案设计、契约制定 | 用户需求 + Spec | Plan + Contract |
 | Developer | 编码实现、提交代码 | Task 描述 | 代码提交 |
 | Reviewer | 代码审查、AC 验证 | 代码文件 | Review 报告 |
+| Tester | 运行集成测试，验证功能完整性 | 代码 + 测试脚本 | 测试报告 |
 
 ## 运行与依赖
 
-- 运行环境：现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90）
-- 启动方式：直接在浏览器中打开 `src/web/todo/index.html`
-- 本地开发：只需文本编辑器 + Git 客户端
-- 无需：Node.js、Python、Docker、包管理器、构建工具
+### Todo 应用
+- **运行环境**: 现代浏览器（Chrome ≥ 90、Firefox ≥ 90、Edge ≥ 90、Safari ≥ 15）
+- **启动方式**: 直接在浏览器中打开 `todolist/index.html`
+- **无需**: Node.js、Python、Docker、构建工具、网络连接
+
+### 测试运行
+```bash
+cd test-repo
+npm install            # 安装 jsdom 等依赖
+node tests/integration.test.js   # 运行集成测试（10 功能场景 + 边缘案例 + 代码质量）
+```
+
+### Python 环境（备选，当前未使用）
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
 
 ## 协作规则
 
-- 日志规范：通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
-- 契约优先：编码前必须先完成 Spec → Plan → Contract 文档
-- 上下文传递：每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
-- 禁止：未经验证就假设全局状态或历史记忆
+### 工作流程
+```
+需求描述 → /spec 生成需求规格 → /plan 分解任务 → /assign 分配任务 → 开发实现 → 审核合并
+```
+
+### 契约规则
+- **契约优先**: 编码前必须先完成 Spec → Plan → Contract 文档
+- **日志规范**: 通过 `action_log`（Base64 编码 JSON）记录操作步骤和错误
+- **上下文隔离**: 每个 Hub 独立维护自己的分支和文档，不跨 Hub 共享状态
+- **禁止**: 未经验证就假设全局状态或历史记忆
+
+### 代码评审规范
+1. 所有 PR 应包含清晰的变更描述和测试覆盖
+2. 关键逻辑变更需至少一个 Agent 审核
+3. 测试覆盖率不低于 80%
 
 ## 演进原则
 
-- 契约优先于实现：任何新功能必须先完成 Spec 和 Contract 再编码
-- 新能力优先通过新增模块实现，不破坏现有模块边界
-- ADR 位置：`[待补充]`
+1. **契约优先于实现**: 任何新功能必须先完成 Spec 和 Contract 再编码
+2. **模块边界**: 新能力优先通过新增模块实现，不破坏现有模块边界
+3. **ADR 记录**: 重要架构决策记录于 `docs/adr/` 目录
+4. **简单优先**: 不做过度设计，够用就好
+5. **可替换性**: 组件间通过接口解耦，便于替换
+6. **测试覆盖**: 核心逻辑必须可测试，增量开发需追加对应测试
+7. **安全性**: 禁止 `innerHTML` 渲染用户输入，禁止 `eval()`，所有用户文本必须使用 `textContent` 渲染
