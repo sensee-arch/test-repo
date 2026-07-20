@@ -131,15 +131,28 @@ section('GetAll (with items)');
 
 resetStorage();
 const store2 = new TodoStore();
-store2.create('First');
-store2.create('Second');
-store2.create('Third');
+store2.create('Alpha');
+store2.create('Beta');
+store2.create('Gamma');
+
+// Stagger createdAt timestamps to verify sort order
+const key = TodoStore.STORAGE_KEY;
+const raw = JSON.parse(localStorage.getItem(key));
+raw[0].createdAt = '2025-01-03T00:00:00.000Z'; // Alpha — newest
+raw[1].createdAt = '2025-01-02T00:00:00.000Z'; // Beta
+raw[2].createdAt = '2025-01-01T00:00:00.000Z'; // Gamma — oldest
+localStorage.setItem(key, JSON.stringify(raw));
+
 const all = store2.getAll();
 assert(all.length === 3, `getAll returns 3 items, got ${all.length}`);
-// Items created in same ms have equal createdAt; stable sort retains insertion order
-// so the last-inserted item ('Third') comes last in the array when sorted desc with equal keys.
-// Instead, verify we see all items and they are recently created.
-assert(all.length === 3, 'getAll returns all items');
+assert(all[0].title === 'Alpha', `expected first item Alpha, got "${all[0].title}"`);
+assert(all[1].title === 'Beta', `expected second item Beta, got "${all[1].title}"`);
+assert(all[2].title === 'Gamma', `expected third item Gamma, got "${all[2].title}"`);
+// Verify createdAt descending order
+assert(new Date(all[0].createdAt) > new Date(all[1].createdAt),
+  'items sorted by createdAt descending (first > second)');
+assert(new Date(all[1].createdAt) > new Date(all[2].createdAt),
+  'items sorted by createdAt descending (second > third)');
 
 // ---------------------------------------------------------------------------
 // Create: empty title throws
