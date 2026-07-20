@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-header__title">待办事项</h1>
+  </header>
+
+  <main class="app-main">
+    <!-- Add task area -->
+    <div class="add-task">
+      <input
+        type="text"
+        id="task-input"
+        class="add-task__input"
+        placeholder="输入新任务..."
+        maxlength="200"
+        data-role="task-input"
+      >
+      <button
+        id="add-btn"
+        class="add-task__btn"
+        data-role="add-btn"
+      >添加</button>
+    </div>
+
+    <!-- Task list container -->
+    <ul id="task-list" class="task-list" data-role="task-list">
+      <!-- Tasks rendered dynamically by app.js -->
+    </ul>
+
+    <!-- Empty state container -->
+    <div id="empty-state" class="empty-state" data-role="empty-state">
+      <p class="empty-state__text">还没有待办事项，添加一个吧！</p>
+    </div>
+
+    <!-- Stats area -->
+    <div id="stats" class="stats" data-role="stats">
+      <span id="task-count" class="stats__count" data-role="task-count">0 项</span>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p class="app-footer__text">Todo List App</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
