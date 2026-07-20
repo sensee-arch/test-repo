@@ -7,43 +7,42 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="todo-app">
+  <div class="todo-container">
     <header class="todo-header">
       <h1 class="todo-header__title">Todo List</h1>
-      <div class="todo-input">
+      <form id="todo-form" class="todo-input">
         <input
           type="text"
-          id="new-todo-input"
+          id="todo-input"
           class="todo-input__field"
           placeholder="What needs to be done?"
-          maxlength="500"
+          maxlength="200"
           autofocus
         >
-        <button id="add-todo-btn" class="todo-input__btn">Add</button>
-      </div>
+        <button type="submit" class="todo-input__btn">Add</button>
+      </form>
     </header>
 
     <main class="todo-main">
       <ul id="todo-list" class="todo-list">
-        <!-- Todo items will be rendered here by JavaScript -->
+        <!-- Todo items rendered by JavaScript -->
       </ul>
     </main>
 
     <footer class="todo-footer">
       <div class="todo-footer__filters">
-        <button class="todo-footer__filter todo-footer__filter--active" data-filter="all">All</button>
-        <button class="todo-footer__filter" data-filter="active">Active</button>
-        <button class="todo-footer__filter" data-filter="completed">Completed</button>
+        <button class="filter-btn" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
       </div>
       <div class="todo-footer__actions">
         <span id="todo-count" class="todo-footer__count">0 items left</span>
-        <button id="clear-completed-btn" class="todo-footer__clear">Clear Completed</button>
+        <button id="clear-completed" class="todo-footer__clear">Clear Completed</button>
       </div>
     </footer>
   </div>
 
-  <script src="js/store.js"></script>
-  <script src="js/renderer.js"></script>
+  <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
