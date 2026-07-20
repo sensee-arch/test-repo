@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>TodoList</h1>
+  </header>
+  <main>
+    <section class="todo-input">
+      <input type="text" id="new-task-input" placeholder="Add a new task..." aria-label="New task">
+      <button id="add-task-btn" disabled>Add</button>
+    </section>
+    <section class="todo-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Active</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </section>
+    <section class="todo-list" id="todo-list"></section>
+    <section class="empty-state" id="empty-state" hidden>
+      <p>No tasks yet. Add one above!</p>
+    </section>
+  </main>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

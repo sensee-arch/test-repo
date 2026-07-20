@@ -1,0 +1,308 @@
+/* ===== CSS Variables ===== */
+:root {
+  --primary: #4a6cf7;
+  --primary-hover: #3b5de7;
+  --bg: #f8f9fa;
+  --bg-card: #ffffff;
+  --text: #333333;
+  --text-secondary: #888888;
+  --border: #e0e0e0;
+  --completed: #9ca3af;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --radius: 8px;
+}
+
+/* ===== Reset & Base ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 20px 16px;
+}
+
+/* ===== Layout ===== */
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+main {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ===== Input Group ===== */
+.todo-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.todo-input input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.todo-input input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+}
+
+.todo-input button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.todo-input button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.todo-input button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.todo-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Filters ===== */
+.todo-filters {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px;
+  box-shadow: var(--shadow);
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: rgba(74, 108, 247, 0.08);
+  color: var(--text);
+}
+
+.filter-btn.active {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* ===== Task List ===== */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.todo-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item .checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+
+.todo-item .task-title {
+  flex: 1;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.todo-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--completed);
+}
+
+.todo-item .delete-btn {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--danger);
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.todo-item .delete-btn:hover {
+  background-color: var(--danger);
+  color: #fff;
+}
+
+.todo-item .delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== Editing State ===== */
+.todo-item.editing .task-title {
+  display: none;
+}
+
+.todo-item .edit-input {
+  display: none;
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 2px solid var(--primary);
+  border-radius: 6px;
+  outline: none;
+}
+
+.todo-item.editing .edit-input {
+  display: block;
+}
+
+.todo-item .edit-actions {
+  display: none;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.todo-item.editing .edit-actions {
+  display: flex;
+}
+
+.todo-item .save-btn,
+.todo-item .cancel-btn {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.todo-item .save-btn {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.todo-item .save-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.todo-item .cancel-btn {
+  background-color: var(--border);
+  color: var(--text);
+}
+
+.todo-item .cancel-btn:hover {
+  background-color: #d0d0d0;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  font-size: 1.125rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  body {
+    padding: 16px 12px;
+  }
+
+  header h1 {
+    font-size: 1.625rem;
+  }
+
+  .todo-input {
+    flex-direction: column;
+  }
+
+  .todo-input button {
+    width: 100%;
+  }
+
+  .todo-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .todo-item .delete-btn {
+    margin-left: auto;
+  }
+
+  .filter-btn {
+    font-size: 0.8125rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  body {
+    padding: 24px 20px;
+  }
+
+  header h1 {
+    font-size: 1.75rem;
+  }
+}

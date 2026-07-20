@@ -1,0 +1,24 @@
+{
+  "name": "test-repo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node tests/test_storage.js && node tests/test_quality.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sensee-arch/test-repo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sensee-arch/test-repo/issues"
+  },
+  "homepage": "https://github.com/sensee-arch/test-repo#readme"
+}
