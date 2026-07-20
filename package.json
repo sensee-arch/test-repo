@@ -1,0 +1,31 @@
+{
+  "name": "test-repo",
+  "version": "1.0.0",
+  "description": "Todo List single-page application — AI Agent collaborative coding playground",
+  "main": "todolist/index.html",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/integration.test.js",
+    "test:unit": "node tests/unit.test.js",
+    "lint": "npx eslint todolist/js/",
+    "ci": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sensee-arch/test-repo.git"
+  },
+  "keywords": ["todo", "vanilla-js", "ai-agent"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sensee-arch/test-repo/issues"
+  },
+  "homepage": "https://github.com/sensee-arch/test-repo#readme",
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
