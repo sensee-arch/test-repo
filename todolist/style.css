@@ -330,6 +330,7 @@ body {
 }
 
 .filter-btn.selected,
+.filter-btn--active,
 .todo-footer__filter--active {
   border-color: var(--color-filter-active);
   color: var(--color-accent);

@@ -151,34 +151,40 @@ var Renderer = (function () {
   }
 
   /**
-   * Update the footer count and show/hide clear-completed button.
+   * Update the footer count and show/hide clear-completed button with count.
    * @param {Todo[]} todos - All todo items
    */
   function renderCounts(todos) {
     var remaining = 0;
+    var completedCount = 0;
     for (var i = 0; i < todos.length; i++) {
-      if (!todos[i].completed) remaining++;
+      if (!todos[i].completed) {
+        remaining++;
+      } else {
+        completedCount++;
+      }
     }
     $todoCount.textContent = remaining + ' item' + (remaining !== 1 ? 's' : '') + ' left';
 
-    var hasCompleted = false;
-    for (var j = 0; j < todos.length; j++) {
-      if (todos[j].completed) { hasCompleted = true; break; }
+    if (completedCount > 0) {
+      $clearCompleted.style.display = '';
+      $clearCompleted.textContent = 'Clear completed (' + completedCount + ')';
+    } else {
+      $clearCompleted.style.display = 'none';
     }
-    $clearCompleted.style.display = hasCompleted ? '' : 'none';
   }
 
   /**
-   * Highlight the active filter button.
+   * Highlight the active filter button using .filter-btn--active class.
    * @param {'all'|'active'|'completed'} activeFilter - Active filter
    */
   function highlightFilter(activeFilter) {
     for (var i = 0; i < $filterButtons.length; i++) {
       var btn = $filterButtons[i];
       if (btn.dataset.filter === activeFilter) {
-        btn.classList.add('selected');
+        btn.classList.add('filter-btn--active');
       } else {
-        btn.classList.remove('selected');
+        btn.classList.remove('filter-btn--active');
       }
     }
   }
