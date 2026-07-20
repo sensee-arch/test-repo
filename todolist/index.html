@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="todo-app">
+    <header class="todo-header">
+      <h1 class="todo-header__title">Todo List</h1>
+      <div class="todo-input">
+        <input
+          type="text"
+          id="new-todo-input"
+          class="todo-input__field"
+          placeholder="What needs to be done?"
+          maxlength="500"
+          autofocus
+        >
+        <button id="add-todo-btn" class="todo-input__btn">Add</button>
+      </div>
+    </header>
+
+    <main class="todo-main">
+      <ul id="todo-list" class="todo-list">
+        <!-- Todo items will be rendered here by JavaScript -->
+      </ul>
+    </main>
+
+    <footer class="todo-footer">
+      <div class="todo-footer__filters">
+        <button class="todo-footer__filter todo-footer__filter--active" data-filter="all">All</button>
+        <button class="todo-footer__filter" data-filter="active">Active</button>
+        <button class="todo-footer__filter" data-filter="completed">Completed</button>
+      </div>
+      <div class="todo-footer__actions">
+        <span id="todo-count" class="todo-footer__count">0 items left</span>
+        <button id="clear-completed-btn" class="todo-footer__clear">Clear Completed</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
