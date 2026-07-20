@@ -1,0 +1,523 @@
+/* =========================================================
+   Todo List App — Complete Style Layer
+   =========================================================
+   Tasks covered: CSS styles & responsive layout
+   ========================================================= */
+
+/* --- CSS Custom Properties (Theme) --- */
+:root {
+  --color-primary: #4A90D9;
+  --color-primary-hover: #3A7BC8;
+  --color-primary-light: #E8F0FE;
+  --color-text: #2C3E50;
+  --color-text-secondary: #7F8C8D;
+  --color-text-muted: #BDC3C7;
+  --color-bg: #F5F6FA;
+  --color-bg-card: #FFFFFF;
+  --color-border: #E0E4E8;
+  --color-border-focus: #4A90D9;
+  --color-completed: #95A5A6;
+  --color-completed-bg: #F9F9F9;
+  --color-danger: #E74C3C;
+  --color-danger-hover: #C0392B;
+  --color-shadow: rgba(0, 0, 0, 0.08);
+  --color-shadow-hover: rgba(0, 0, 0, 0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --font-stack: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --max-width: 600px;
+}
+
+/* --- Reset & Global --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-stack);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* =========================================================
+   Layout — Flex Column, Centered
+   ========================================================= */
+
+.app-header,
+.app-main,
+.app-footer {
+  width: 100%;
+  max-width: var(--max-width);
+  padding: 0 20px;
+}
+
+.app-main {
+  flex: 1;
+}
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.app-header {
+  padding-top: 40px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+.app-header__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.5px;
+}
+
+/* =========================================================
+   Add Task Area
+   ========================================================= */
+
+.add-task {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.add-task__input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-family: var(--font-stack);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  background-color: var(--color-bg-card);
+  color: var(--color-text);
+}
+
+.add-task__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.add-task__input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.2);
+}
+
+.add-task__btn {
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-stack);
+  color: #FFFFFF;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+
+.add-task__btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.add-task__btn:active {
+  transform: scale(0.97);
+}
+
+.add-task__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   Filter Tabs
+   ========================================================= */
+
+.filter-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.filter-tabs__btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-stack);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-tabs__btn:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.filter-tabs__btn--active {
+  color: #FFFFFF;
+  background-color: var(--color-primary);
+}
+
+.filter-tabs__btn--active:hover {
+  color: #FFFFFF;
+  background-color: var(--color-primary-hover);
+}
+
+/* =========================================================
+   Task List
+   ========================================================= */
+
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- Task Item (Card) --- */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 4px var(--color-shadow);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  animation: taskFadeIn var(--transition-normal) ease;
+}
+
+.task-item:hover {
+  box-shadow: 0 3px 10px var(--color-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.task-item--completed {
+  background-color: var(--color-completed-bg);
+  border-color: transparent;
+}
+
+.task-item--removing {
+  animation: taskFadeOut 300ms ease forwards;
+}
+
+/* --- Custom Checkbox --- */
+.task-item__checkbox {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.task-item__checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
+}
+
+.task-item__checkbox label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background-color: var(--color-bg-card);
+}
+
+.task-item__checkbox label::after {
+  content: '';
+  width: 8px;
+  height: 4px;
+  border-left: 2.5px solid #FFFFFF;
+  border-bottom: 2.5px solid #FFFFFF;
+  transform: rotate(-45deg) scale(0);
+  transition: transform var(--transition-fast);
+  position: absolute;
+  top: 5px;
+}
+
+.task-item__checkbox input[type="checkbox"]:checked + label {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.task-item__checkbox input[type="checkbox"]:checked + label::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+.task-item__checkbox input[type="checkbox"]:focus-visible + label {
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.3);
+}
+
+/* --- Task Title --- */
+.task-item__title {
+  flex: 1;
+  font-size: 0.95rem;
+  word-break: break-word;
+  cursor: text;
+  padding: 2px 0;
+  transition: color var(--transition-fast);
+}
+
+.task-item--completed .task-item__title {
+  color: var(--color-completed);
+  text-decoration: line-through;
+}
+
+/* --- Inline Edit --- */
+.task-item__edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  font-family: var(--font-stack);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background-color: var(--color-bg-card);
+  color: var(--color-text);
+}
+
+/* --- Delete Button --- */
+.task-item__delete-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  opacity: 0;
+}
+
+.task-item:hover .task-item__delete-btn {
+  opacity: 1;
+}
+
+.task-item__delete-btn:hover {
+  color: var(--color-danger);
+  background-color: rgba(231, 76, 60, 0.08);
+}
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.empty-state__text {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.empty-state--hidden {
+  display: none;
+}
+
+/* =========================================================
+   Stats Area
+   ========================================================= */
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  margin-top: 16px;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.stats__count {
+  font-weight: 500;
+}
+
+.stats__detail {
+  display: flex;
+  gap: 12px;
+}
+
+.stats__item {
+  white-space: nowrap;
+}
+
+.stats__item--completed {
+  color: var(--color-completed);
+}
+
+.stats__item--active {
+  color: var(--color-primary);
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.app-footer {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.app-footer__text {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+@keyframes taskFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes taskFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+/* =========================================================
+   Responsive: Mobile (< 640px)
+   ========================================================= */
+
+@media (max-width: 640px) {
+
+  .app-header,
+  .app-main,
+  .app-footer {
+    padding: 0 16px;
+  }
+
+  .app-header {
+    padding-top: 28px;
+    padding-bottom: 16px;
+  }
+
+  .app-header__title {
+    font-size: 1.4rem;
+  }
+
+  .add-task {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .add-task__input {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .add-task__btn {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+
+  .task-item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .task-item__title {
+    font-size: 0.9rem;
+  }
+
+  .task-item__delete-btn {
+    opacity: 1;
+  }
+
+  .filter-tabs__btn {
+    font-size: 0.8rem;
+    padding: 7px 10px;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    padding: 12px 14px;
+  }
+
+  .stats__detail {
+    justify-content: center;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+
+  .app-footer {
+    padding: 20px 16px;
+  }
+}
