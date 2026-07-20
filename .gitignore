@@ -1,0 +1,4 @@
+.venv/
+.browsers/
+node_modules/
+openclaw-workspace-state.json
