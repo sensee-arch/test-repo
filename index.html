@@ -1,55 +1,46 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Todo List</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <main class="todo-container" id="todo-app">
+    <header class="todo-header">
+      <h1 class="todo-header__title">📋 Todo List</h1>
+      <form class="todo-form" id="todo-form" autocomplete="off">
+        <input
+          class="todo-form__input"
+          id="todo-input"
+          type="text"
+          placeholder="What needs to be done?"
+          maxlength="200"
+          required
+          aria-label="New task title"
+        />
+        <button class="todo-form__submit" type="submit" aria-label="Add task">Add</button>
+      </form>
+    </header>
 
-  <header class="app-header">
-    <h1 class="app-header__title">待办事项</h1>
-  </header>
-
-  <main class="app-main">
-    <!-- Add task area -->
-    <div class="add-task">
-      <input
-        type="text"
-        id="task-input"
-        class="add-task__input"
-        placeholder="输入新任务..."
-        maxlength="200"
-        data-role="task-input"
-      >
-      <button
-        id="add-btn"
-        class="add-task__btn"
-        data-role="add-btn"
-      >添加</button>
+    <div class="todo-list-wrap">
+      <ul class="todo-list" id="todo-list" aria-label="Task list">
+        <!-- Tasks rendered by JavaScript -->
+      </ul>
     </div>
 
-    <!-- Task list container -->
-    <ul id="task-list" class="task-list" data-role="task-list">
-      <!-- Tasks rendered dynamically by app.js -->
-    </ul>
-
-    <!-- Empty state container -->
-    <div id="empty-state" class="empty-state" data-role="empty-state">
-      <p class="empty-state__text">还没有待办事项，添加一个吧！</p>
-    </div>
-
-    <!-- Stats area -->
-    <div id="stats" class="stats" data-role="stats">
-      <span id="task-count" class="stats__count" data-role="task-count">0 项</span>
-    </div>
+    <footer class="todo-footer">
+      <span class="todo-footer__count" id="todo-count">0 items left</span>
+      <nav class="todo-footer__filters" aria-label="Filter tasks">
+        <button class="todo-footer__filter-btn todo-footer__filter-btn--selected" data-filter="all" type="button">All</button>
+        <button class="todo-footer__filter-btn" data-filter="active" type="button">Active</button>
+        <button class="todo-footer__filter-btn" data-filter="completed" type="button">Completed</button>
+      </nav>
+      <button class="todo-footer__clear" id="clear-completed" type="button" style="display:none">Clear completed</button>
+    </footer>
   </main>
 
-  <footer class="app-footer">
-    <p class="app-footer__text">Todo List App</p>
-  </footer>
-
-  <script src="app.js" defer></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
