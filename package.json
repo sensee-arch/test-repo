@@ -6,7 +6,7 @@
   "scripts": {
     "test": "node test/app.test.js"
   },
-  "dependencies": {
-    "jsdom": "^29.1.1"
+  "devDependencies": {
+    "jsdom": "^25.0.0 || ^26.0.0"
   }
 }
