@@ -66,13 +66,15 @@ class DataModule {
    * @returns {Array<Object>}
    */
   getTasks() {
-    if (!this.#available) return this.#fallbackData;
+    if (!this.#available) return this.#fallbackData.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw === null) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed)
+        ? parsed.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        : [];
     } catch (e) {
       console.warn('DataModule.getTasks: parse error, returning empty array', e);
       return [];
@@ -315,7 +317,7 @@ class RenderModule {
   /** Show empty state message. */
   renderEmpty() {
     this.#containerEl.innerHTML =
-      '<li class="todo-list__empty">No tasks yet. Add one above!</li>';
+      '<li class="todo-list__empty">还没有任务，添加一个吧！</li>';
   }
 
   /**
@@ -325,7 +327,7 @@ class RenderModule {
    */
   renderStats(stats, currentFilter = 'all') {
     this.#statsEl.textContent =
-      stats.active + ' item' + (stats.active !== 1 ? 's' : '') + ' left';
+      '共 ' + stats.total + ' 项，已完成 ' + stats.completed + ' 项，未完成 ' + stats.active + ' 项';
 
     this.#filterBtns.forEach((btn) => {
       btn.classList.toggle('todo-footer__filter-btn--selected', btn.dataset.filter === currentFilter);
