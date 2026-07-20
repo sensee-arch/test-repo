@@ -1,0 +1,9 @@
+{
+  "name": "todolist-spa",
+  "version": "1.0.0",
+  "description": "TodoList SPA — pure frontend, no framework",
+  "private": true,
+  "scripts": {
+    "test": "node test/app.test.js"
+  }
+}

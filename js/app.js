@@ -386,6 +386,9 @@ class EventModule {
   /** @type {string} */
   #currentFilter = 'all';
 
+  /** @type {Set<string>} Track tasks currently animating toggle to prevent double-toggle */
+  #togglingIds = new Set();
+
   /**
    * @param {DataModule} dm
    * @param {RenderModule} rm
@@ -408,16 +411,6 @@ class EventModule {
   /** Full re-render from current filter + stats. */
   #refresh() {
     this.#rm.render(this.#getFiltered());
-    this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
-  }
-
-  /**
-   * React to DataModule changes.
-   * Only updates stats to preserve animation DOM state.
-   * Full refresh is triggered explicitly (filter switch, etc.).
-   * @param {{ tasks:Array, stats:Object }} _
-   */
-  onDataChanged(_) {
     this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
   }
 
@@ -461,10 +454,15 @@ class EventModule {
       const li = cb.closest('.todo-item');
       if (!li) return;
       const id = li.dataset.id;
+
+      // Guard: prevent double-toggle while completion animation is in progress
+      if (this.#togglingIds.has(id)) return;
+
       const wasCompleted = li.classList.contains('todo-item--completed');
 
       if (!wasCompleted) {
         // Completing: add scaleIn animation on checkbox + title fade
+        this.#togglingIds.add(id);
         li.classList.add('todo-item--completing');
         setTimeout(() => {
           try { this.#dm.toggleTask(id); } catch (err) {
@@ -472,8 +470,9 @@ class EventModule {
           }
           li.classList.remove('todo-item--completing');
           li.classList.add('todo-item--completed');
+          this.#togglingIds.delete(id);
           this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
-        }, 300);
+        }, ANIMATION_DURATION_MS);
       } else {
         // Un-completing: toggle immediately, no animation
         try { this.#dm.toggleTask(id); } catch (err) {
@@ -536,6 +535,8 @@ class EventModule {
         console.error('updateTask failed:', err.message);
       }
     }
+    // Refresh DOM after edit (remove editing element, show updated task)
+    this.#refresh();
   }
 
   /** Bind delete buttons via delegation with fadeOut animation. */
@@ -547,7 +548,7 @@ class EventModule {
       if (!li) return;
       const id = li.dataset.id;
       this.#rm.removeTaskItem(id, () => {
-        // After animation, delete from DataModule and refresh
+        // After animation, delete from DataModule and update stats
         this.#dm.deleteTask(id);
         this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
       });
@@ -570,14 +571,27 @@ class EventModule {
   }
 
   /**
-   * Bind clear-completed button.
+   * Bind clear-completed button — animate removals then delete.
    * @param {HTMLElement} btn
    */
   bindClearCompleted(btn) {
     btn.addEventListener('click', () => {
-      this.#dm.getTasks()
-        .filter((t) => t.completed)
-        .forEach((t) => this.#dm.deleteTask(t.id));
+      const completedItems = this.#listEl.querySelectorAll('.todo-item--completed');
+      if (completedItems.length === 0) return;
+
+      let pending = completedItems.length;
+      const idsToDelete = [];
+      completedItems.forEach((li) => {
+        const id = li.dataset.id;
+        idsToDelete.push(id);
+        this.#rm.removeTaskItem(id, () => {
+          pending--;
+          if (pending === 0) {
+            idsToDelete.forEach((did) => this.#dm.deleteTask(did));
+            this.#rm.renderStats(this.#dm.getStats(), this.#currentFilter);
+          }
+        });
+      });
     });
   }
 }
@@ -602,9 +616,6 @@ function initApp() {
   const dm = new DataModule();
   const rm = new RenderModule(listEl, statsEl, clearBtn, filterBtns);
   const ev = new EventModule(dm, rm, listEl);
-
-  // Subscribe EventModule to DataModule changes (used as safety net)
-  dm.onChange((payload) => ev.onDataChanged(payload));
 
   // Bind all interactions
   ev.bindAddTask(inputEl, formEl);
