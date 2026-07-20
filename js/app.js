@@ -342,7 +342,7 @@ class RenderModule {
    */
   addTaskItem(task) {
     const empty = this.#containerEl.querySelector('.todo-list__empty');
-    if (empty) this.#containerEl.innerHTML = '';
+    if (empty) empty.remove();
 
     const el = this.#createTaskElement(task, true);
     this.#containerEl.prepend(el);
