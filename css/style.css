@@ -190,6 +190,30 @@ main {
   }
 }
 
+/* Slide-out animation for item removal */
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    max-height: 100px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-width: 0;
+  }
+}
+
+.todo-item.removing {
+  animation: slideOut 250ms ease-in forwards;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 .todo-item {
   display: flex;
   align-items: center;
@@ -282,9 +306,12 @@ main {
 
 .todo-title {
   flex: 1;
-  word-break: break-word;
+  min-width: 0;
   font-size: 0.9375rem;
   line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: color var(--transition);
 }
 

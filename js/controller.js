@@ -11,6 +11,7 @@ export class TodoController {
     this.store = new TodoStore();
     this.view = new TodoView();
     this.editingId = null;
+    this._submitting = false;
   }
 
   /**
@@ -91,7 +92,6 @@ export class TodoController {
   bindCrossTabSync() {
     window.addEventListener('storage', (e) => {
       if (e.key === TodoStore.STORAGE_KEY) {
-        // Only re-render if we are not the origin tab
         this.render();
       }
     });
@@ -102,6 +102,8 @@ export class TodoController {
    * @param {string} title
    */
   handleAdd(title) {
+    if (this._submitting) return;
+
     const trimmed = title.trim();
     if (!trimmed) {
       this.view.showError('Please enter a task.');
@@ -109,11 +111,21 @@ export class TodoController {
       return;
     }
 
+    this._submitting = true;
+    const addBtn = document.getElementById('todo-add-btn');
+    addBtn.disabled = true;
+
     try {
       this.store.create(trimmed);
       this.render();
     } catch (err) {
       this.view.showError(err.message);
+    } finally {
+      // Re-enable after a short cooldown to prevent rapid double-clicks
+      setTimeout(() => {
+        this._submitting = false;
+        addBtn.disabled = false;
+      }, 300);
     }
   }
 
@@ -175,7 +187,19 @@ export class TodoController {
     const item = this.store.getById(id);
     if (!item) return;
 
-    if (confirm(`Delete "${item.title}"?`)) {
+    if (!confirm(`Delete "${item.title}"?`)) return;
+
+    // Animated removal
+    const li = this.view.listEl.querySelector(`[data-id="${id}"]`);
+    if (li) {
+      li.classList.add('removing');
+      const onEnd = () => {
+        li.removeEventListener('animationend', onEnd);
+        this.store.delete(id);
+        this.render();
+      };
+      li.addEventListener('animationend', onEnd);
+    } else {
       this.store.delete(id);
       this.render();
     }
