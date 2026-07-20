@@ -1,26 +1,30 @@
 /**
- * Application Module — Todo List orchestration layer
- * Binds DOM events, validates input, orchestrates Store → Renderer flow.
+ * Handler Module — Entry point, event binding, orchestrates Store → Renderer flow.
+ * Uses storage.js for persistence. Renderer for DOM updates.
+ * TASK-5: Event delegation, keyboard shortcuts, full CRUD lifecycle.
  * @module app
  */
 
 /* ─── Constants ─── */
 
-/** Maximum allowed title length */
+/** @const {string} localStorage key (shared with store.js) */
+var APP_STORAGE_KEY = 'todolist_tasks';
+
+/** @const {number} Maximum allowed title length (HTML input maxlength=200) */
 var TITLE_MAX_LENGTH = 200;
 
 /* ─── State ─── */
 
-/** @type {Todo[]} */
+/** @type {Todo[]} In-memory task list */
 var tasks = [];
 
-/** @type {'all'|'active'|'completed'} */
+/** @type {'all'|'active'|'completed'} Active filter */
 var currentFilter = 'all';
 
-/** @type {string|null} */
+/** @type {string|null} ID of the task currently being edited */
 var editingId = null;
 
-/* ─── DOM refs (populated on init) ─── */
+/* ─── DOM refs ─── */
 
 /** @type {HTMLFormElement} */
 var $todoForm;
@@ -35,47 +39,67 @@ var $clearCompleted;
 /** @type {HTMLSpanElement} */
 var $todoCount;
 
-/* ─── Task model ─── */
+/* ─── Data helpers ─── */
 
 /**
- * Create a new task object.
- * @param {string} title - Task title (will be trimmed)
- * @returns {Todo} New task object
+ * Load tasks from persistent storage.
+ * Creates `title` field if the data uses Store's `text` field name.
+ * @returns {Todo[]}
  */
-function createTask(title) {
-  return {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    title: title.trim(),
-    completed: false,
-    createdAt: new Date().toISOString()
-  };
-}
-
-/* ─── Storage ─── */
-
-/** Load tasks from persistent storage into state. */
 function loadTasks() {
-  tasks = getTasks();
-}
-
-/** Persist current tasks state to storage. */
-function persistTasks() {
-  saveTasks(tasks);
+  var raw = getTasks();
+  tasks = [];
+  for (var i = 0; i < raw.length; i++) {
+    var t = raw[i];
+    tasks.push({
+      id: t.id,
+      title: t.title || t.text || '',
+      text: t.text || t.title || '',
+      completed: !!t.completed,
+      createdAt: t.createdAt || new Date().toISOString(),
+      updatedAt: t.updatedAt || t.createdAt || new Date().toISOString()
+    });
+  }
+  return tasks;
 }
 
 /**
- * Sort tasks: incomplete first, then completed; within each group,
- * newer (later createdAt) tasks come first.
- * @param {Todo[]} taskList
- * @returns {Todo[]} Sorted copy
+ * Persist tasks to localStorage.
+ * Writes with both `title` (for tests/renderer) and `text` (for Store compat).
  */
-function sortTasks(taskList) {
-  return taskList.slice().sort(function (a, b) {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+function persistTasks() {
+  var out = [];
+  for (var i = 0; i < tasks.length; i++) {
+    var t = tasks[i];
+    out.push({
+      id: t.id,
+      title: t.title,
+      text: t.text || t.title,
+      completed: t.completed,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt || new Date().toISOString()
+    });
+  }
+  try {
+    localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(out));
+  } catch (_e) {
+    // localStorage quota exceeded — silently ignored
+  }
+}
+
+/**
+ * Generate a unique task ID.
+ * @returns {string}
+ */
+function generateTaskId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+
+/**
+ * Full re-render via Renderer module.
+ */
+function renderAll() {
+  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
 }
 
 /* ─── Message Display ─── */
@@ -110,175 +134,217 @@ function clearMessage() {
  * Add a new task.
  * @param {string} title - Task title
  */
-function addTask(title) {
-  var trimmed = title.trim();
+function handleAdd(title) {
+  var trimmed = (typeof title === 'string' ? title : '').trim();
   if (!trimmed) return;
+
   if (trimmed.length > TITLE_MAX_LENGTH) {
     showMessage('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
     return;
   }
-  tasks.push(createTask(trimmed));
-  tasks = sortTasks(tasks);
+
+  var now = new Date().toISOString();
+  var todo = {
+    id: generateTaskId(),
+    title: trimmed,
+    text: trimmed,
+    completed: false,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  tasks.unshift(todo);
   persistTasks();
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  renderAll();
+}
+
+/**
+ * Toggle a task's completed status.
+ * @param {string} id - Task ID
+ */
+function handleToggle(id) {
+  if (!id) return;
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === id) {
+      tasks[i].completed = !tasks[i].completed;
+      tasks[i].updatedAt = new Date().toISOString();
+      break;
+    }
+  }
+  persistTasks();
+  renderAll();
 }
 
 /**
  * Delete a task by ID.
  * @param {string} id - Task ID
  */
-function deleteTask(id) {
+function handleDelete(id) {
+  if (!id) return;
   if (editingId === id) {
     editingId = null;
   }
-  tasks = tasks.filter(function (t) { return t.id !== id; });
-  persistTasks();
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
-}
-
-/**
- * Toggle a task's completion status.
- * @param {string} id - Task ID
- */
-function toggleTask(id) {
-  var task = null;
+  var filtered = [];
   for (var i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === id) { task = tasks[i]; break; }
+    if (tasks[i].id !== id) {
+      filtered.push(tasks[i]);
+    }
   }
-  if (!task) return;
-  task.completed = !task.completed;
-  tasks = sortTasks(tasks);
+  tasks = filtered;
   persistTasks();
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  renderAll();
 }
 
 /**
  * Update a task's title.
+ * Empty/whitespace-only input deletes the task (TodoMVC convention).
  * @param {string} id - Task ID
- * @param {string} newTitle - New title
+ * @param {string} newTitle - New title text
  */
-function updateTaskTitle(id, newTitle) {
-  var trimmed = newTitle.trim();
-  var task = null;
-  for (var i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === id) { task = tasks[i]; break; }
-  }
-  if (!task) {
-    editingId = null;
-    return;
-  }
+function handleEdit(id, newTitle) {
+  if (!id) return;
+  var trimmed = (typeof newTitle === 'string' ? newTitle : '').trim();
+
+  // Empty input → delete task
   if (!trimmed) {
     editingId = null;
-    deleteTask(id);
+    handleDelete(id);
     return;
   }
+
   if (trimmed.length > TITLE_MAX_LENGTH) {
     showMessage('Title cannot exceed ' + TITLE_MAX_LENGTH + ' characters.');
     return;
   }
-  task.title = trimmed;
+
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === id) {
+      tasks[i].title = trimmed;
+      tasks[i].text = trimmed;
+      tasks[i].updatedAt = new Date().toISOString();
+      break;
+    }
+  }
   editingId = null;
   persistTasks();
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
-}
-
-/** Clear all completed tasks. */
-function clearCompleted() {
-  tasks = tasks.filter(function (t) { return !t.completed; });
-  persistTasks();
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  renderAll();
 }
 
 /**
- * Set the active filter.
+ * Clear all completed tasks.
+ */
+function handleClearCompleted() {
+  var active = [];
+  for (var i = 0; i < tasks.length; i++) {
+    if (!tasks[i].completed) {
+      active.push(tasks[i]);
+    }
+  }
+  tasks = active;
+  persistTasks();
+  renderAll();
+}
+
+/**
+ * Change the active filter and re-render.
  * @param {'all'|'active'|'completed'} filter
  */
-function setFilter(filter) {
+function handleFilterChange(filter) {
   currentFilter = filter;
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  renderAll();
 }
 
-/* ─── Event handling ─── */
+/* ─── Event Handling ─── */
 
 /**
- * Handle form submission (add task).
+ * Handle form submission — add task.
  * @param {Event} e - Submit event
  */
-function handleFormSubmit(e) {
+function onFormSubmit(e) {
   e.preventDefault();
-  addTask($todoInput.value);
+  handleAdd($todoInput.value);
   $todoInput.value = '';
   $todoInput.focus();
 }
 
 /**
- * Handle click events on task list (toggle/delete).
+ * Handle click events on the todo list (delegation on #todo-list).
+ * .toggle → toggle completion
+ * .destroy → delete task
  * @param {Event} e - Click event
  */
-function handleListClick(e) {
+function onListClick(e) {
   var li = e.target.closest('.todo-item');
   if (!li) return;
   var id = li.dataset.id;
+  if (!id) return;
 
   if (e.target.classList.contains('toggle')) {
-    toggleTask(id);
+    handleToggle(id);
   } else if (e.target.classList.contains('destroy')) {
-    deleteTask(id);
+    handleDelete(id);
   }
 }
 
 /**
- * Handle double-click on a task to start editing.
+ * Handle double-click on a task — enter edit mode.
  * @param {Event} e - DblClick event
  */
-function handleListDblClick(e) {
+function onListDblClick(e) {
   var li = e.target.closest('.todo-item');
   if (!li || li.classList.contains('editing')) return;
   var id = li.dataset.id;
-  editingId = id;
+  if (!id) return;
 
-  // Find the task for its current title
   var task = null;
   for (var i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === id) { task = tasks[i]; break; }
+    if (tasks[i].id === id) {
+      task = tasks[i];
+      break;
+    }
   }
-  if (!task) { editingId = null; return; }
+  if (!task) return;
 
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  editingId = id;
+  renderAll();
 
-  // Focus and select the edit input after render
-  var input = $todoList.querySelector('[data-id="' + id + '"] .edit-input');
-  if (input) {
-    input.focus();
-    input.select();
+  // Focus and select edit input after DOM update
+  var editInput = $todoList.querySelector('[data-id="' + id + '"] .edit-input');
+  if (editInput) {
+    editInput.focus();
+    editInput.select();
   }
 }
 
 /**
- * Handle keyboard events in edit input (Enter/Escape).
+ * Handle keyboard on the todo list (delegation).
+ * Escape → cancel edit
+ * Enter → confirm edit
  * @param {Event} e - Keydown event
  */
-function handleListKeydown(e) {
+function onListKeydown(e) {
   if (e.key === 'Escape') {
     editingId = null;
-    Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+    renderAll();
     return;
   }
   if (e.key !== 'Enter') return;
+
   var li = e.target.closest('.todo-item');
   if (!li) return;
-  updateTaskTitle(li.dataset.id, e.target.value);
+  handleEdit(li.dataset.id, e.target.value);
 }
 
 /**
- * Handle blur/focusout on edit input.
+ * Handle blur (focusout) on edit input — confirm edit.
  * @param {Event} e - FocusEvent
  */
-function handleEditBlur(e) {
+function onEditBlur(e) {
   var li = e.target.closest('.todo-item');
   if (!li) return;
-  if (editingId === li.dataset.id && tasks.some(function (t) { return t.id === li.dataset.id; })) {
-    updateTaskTitle(li.dataset.id, e.target.value);
+  var id = li.dataset.id;
+  if (editingId === id) {
+    handleEdit(id, e.target.value);
   }
 }
 
@@ -286,6 +352,7 @@ function handleEditBlur(e) {
 
 /** Bootstrap the application. */
 function init() {
+  // Cache DOM references
   $todoForm = document.getElementById('todo-form');
   $todoInput = document.getElementById('todo-input');
   $todoList = document.getElementById('todo-list');
@@ -293,6 +360,7 @@ function init() {
   $clearCompleted = document.getElementById('clear-completed');
   $todoCount = document.getElementById('todo-count');
 
+  // Initialise Renderer with DOM references
   Renderer.init({
     todoList: $todoList,
     filterButtons: $filterButtons,
@@ -300,21 +368,26 @@ function init() {
     todoCount: $todoCount
   });
 
+  // Load persisted data
   loadTasks();
 
-  $todoForm.addEventListener('submit', handleFormSubmit);
-  $todoList.addEventListener('click', handleListClick);
-  $todoList.addEventListener('dblclick', handleListDblClick);
-  $todoList.addEventListener('keydown', handleListKeydown);
-  $todoList.addEventListener('focusout', handleEditBlur);
+  // Wire events — delegation on #todo-list
+  $todoForm.addEventListener('submit', onFormSubmit);
+  $todoList.addEventListener('click', onListClick);
+  $todoList.addEventListener('dblclick', onListDblClick);
+  $todoList.addEventListener('keydown', onListKeydown);
+  $todoList.addEventListener('focusout', onEditBlur);
 
-  $filterButtons.forEach(function (btn) {
-    btn.addEventListener('click', function () { setFilter(btn.dataset.filter); });
+  Array.prototype.forEach.call($filterButtons, function (btn) {
+    btn.addEventListener('click', function () {
+      handleFilterChange(btn.dataset.filter);
+    });
   });
 
-  $clearCompleted.addEventListener('click', clearCompleted);
+  $clearCompleted.addEventListener('click', handleClearCompleted);
 
-  Renderer.render(tasks, { activeFilter: currentFilter, editingId: editingId });
+  // Initial render
+  renderAll();
 }
 
 document.addEventListener('DOMContentLoaded', init);
